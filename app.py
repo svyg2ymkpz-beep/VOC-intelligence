@@ -1,5 +1,6 @@
 
 import os
+import io
 import re
 import json
 import time
@@ -28,7 +29,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.4 Shared Cloud Test Edition"
+APP_VERSION = "V4.5 Shared Cloud · Korean Normalization"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -412,6 +413,61 @@ def list_users_df():
             conn,
         )
 
+def load_all_audit():
+    with ENGINE.connect() as conn:
+        return pd.read_sql_query(
+            sql_text("""
+                SELECT id, voc_id, action, changed_by, changed_at, summary
+                FROM audit_log
+                ORDER BY id DESC
+            """),
+            conn,
+        )
+
+def build_excel_backup():
+    """Create an in-memory Excel backup of VOC data and audit history."""
+    voc_df = load_cases()
+    audit_df = load_all_audit()
+    buf = io.BytesIO()
+    with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+        voc_df.to_excel(writer, sheet_name="VOC_Master", index=False)
+        audit_df.to_excel(writer, sheet_name="Audit_Log", index=False)
+        info_df = pd.DataFrame([
+            ["Backup Created At", datetime.now().strftime("%Y-%m-%d %H:%M:%S")],
+            ["Database Backend", DB_BACKEND],
+            ["VOC Records", len(voc_df)],
+            ["Audit Records", len(audit_df)],
+            ["App Version", APP_VERSION],
+        ], columns=["Item", "Value"])
+        info_df.to_excel(writer, sheet_name="Backup_Info", index=False)
+
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+        wb = writer.book
+        header_fill = PatternFill("solid", fgColor="B89046")
+        header_font = Font(color="FFFFFF", bold=True)
+        thin = Side(style="thin", color="D9D9D9")
+        for ws in wb.worksheets:
+            ws.freeze_panes = "A2"
+            ws.auto_filter.ref = ws.dimensions
+            for cell in ws[1]:
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            for row in ws.iter_rows():
+                for cell in row:
+                    cell.border = Border(bottom=thin)
+                    cell.alignment = Alignment(vertical="top", wrap_text=True)
+            for col_idx, column_cells in enumerate(ws.columns, 1):
+                max_len = 0
+                for cell in list(column_cells)[:300]:
+                    value = "" if cell.value is None else str(cell.value)
+                    max_len = max(max_len, min(len(value), 45))
+                ws.column_dimensions[get_column_letter(col_idx)].width = max(10, min(max_len + 2, 38))
+            ws.row_dimensions[1].height = 24
+    buf.seek(0)
+    return buf.getvalue()
+
 # ---------- AI ----------
 def clean_json(s):
     s = (s or "").strip()
@@ -512,9 +568,10 @@ Rules:
 6. Suggest practical immediate internal actions.
 7. Root-cause suggestions MUST remain hypotheses.
 8. Generate checkpoints and missing-information questions.
-9. Generate concise professional Korean, Simplified Chinese and English summaries.
-10. Normalized operational values should primarily be in Korean, while product codes, LOT,
-    quantities, dates, units and SPEC values must remain exactly as source.
+9. ALWAYS generate all three summary fields. summary_ko MUST be Korean, summary_zh MUST be Simplified Chinese, and summary_en MUST be professional English. Never leave these three fields blank when the VOC source contains meaningful content.
+10. issue_summary MUST ALWAYS be written in concise professional KOREAN, even when the original VOC is Chinese or English.
+11. Other narrative operational fields (failure_detail, occurrence_condition, customer_impact, customer_request, internal_action_items, ai_suggested_cause, required_check_points, missing_information) should also be normalized primarily into Korean.
+12. Product codes, LOT, quantities, dates, units and SPEC/Actual values must remain exactly as source.
 
 Return ONLY valid JSON with exactly these keys:
 {{
@@ -615,6 +672,67 @@ def is_transient_api_error(exc):
     ]
     return any(t in msg for t in tokens)
 
+def _contains_hangul(text):
+    return bool(re.search(r"[가-힣]", str(text or "")))
+
+def ensure_multilingual_summaries(result, source_text, provider, api_key, model):
+    """Repair missing multilingual summaries and force issue_summary to Korean.
+
+    Most providers follow the main JSON prompt, but some models occasionally omit
+    summary fields or mirror the source language into issue_summary.  Only when
+    that happens, run a small repair request instead of paying for a second full
+    analysis on every VOC.
+    """
+    result = dict(result or {})
+    needs_repair = (
+        not str(result.get("summary_ko", "")).strip()
+        or not str(result.get("summary_zh", "")).strip()
+        or not str(result.get("summary_en", "")).strip()
+        or not _contains_hangul(result.get("issue_summary", ""))
+    )
+    if not needs_repair:
+        return result
+
+    repair_prompt = f"""
+You are repairing only the language-summary fields of an NPI/VOC analysis.
+Use the VOC source and the existing extracted analysis below.
+
+MANDATORY OUTPUT RULES:
+- Return ONLY valid JSON with exactly four keys.
+- issue_summary: concise professional KOREAN only.
+- summary_ko: concise professional KOREAN summary.
+- summary_zh: concise professional SIMPLIFIED CHINESE summary.
+- summary_en: concise professional ENGLISH summary.
+- None of the four values may be blank when meaningful VOC information exists.
+- Preserve product codes, LOT numbers, dates, quantities, units, SPEC and Actual values exactly.
+- Do not invent facts. Root-cause hypotheses must not be presented as confirmed facts.
+
+Return format:
+{{"issue_summary":"","summary_ko":"","summary_zh":"","summary_en":""}}
+
+VOC SOURCE:
+{source_text}
+
+EXISTING ANALYSIS:
+{json.dumps(result, ensure_ascii=False)}
+"""
+    try:
+        raw = call_provider(provider, repair_prompt, api_key, model)
+        repaired = json.loads(clean_json(raw))
+        for key in ["issue_summary", "summary_ko", "summary_zh", "summary_en"]:
+            value = str(repaired.get(key, "") or "").strip()
+            if value:
+                result[key] = value
+    except Exception:
+        # Keep the successful main analysis even if the small repair request fails.
+        pass
+
+    # Final safe fallback: if Korean summary exists, issue_summary should never
+    # remain in the source language.
+    if not _contains_hangul(result.get("issue_summary", "")) and str(result.get("summary_ko", "")).strip():
+        result["issue_summary"] = result["summary_ko"]
+    return result
+
 def deep_analyze(text, provider, api_key, model):
     if provider == "Local / No API" or not api_key:
         return heuristic_analysis(text)
@@ -625,6 +743,7 @@ def deep_analyze(text, provider, api_key, model):
         try:
             raw = call_provider(provider, prompt, api_key, model)
             result = json.loads(clean_json(raw))
+            result = ensure_multilingual_summaries(result, text, provider, api_key, model)
             result["analysis_source"] = f"{provider} ({model})"
             if attempt:
                 result["analysis_warning"] = "AI 서버 혼잡으로 재시도 후 분석에 성공했습니다."
@@ -1114,6 +1233,21 @@ def settings_page(user):
     st.caption("공개 테스트 배포에서는 실제 고객/LOT/기밀 자료 대신 더미 또는 비식별 데이터를 사용하세요.")
 
     if user["role"] == "Admin":
+        st.subheader("📦 중앙 DB 백업 / Database Backup / 数据库备份")
+        st.caption("현재 Supabase 중앙 DB의 VOC 전체 데이터와 변경 이력을 Excel 파일로 내려받습니다. 사용자 비밀번호 정보는 포함하지 않습니다.")
+        try:
+            backup_bytes = build_excel_backup()
+            backup_name = f"VOC_DB_Backup_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+            st.download_button(
+                "⬇️ 전체 DB Excel 백업 다운로드 / Download Full DB Backup / 下载完整数据库备份",
+                data=backup_bytes,
+                file_name=backup_name,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True,
+            )
+        except Exception as e:
+            st.error(f"백업 파일 생성 실패: {e}")
+
         st.subheader("사용자 관리 / User Management / 用户管理")
         users = list_users_df()
         st.dataframe(users, use_container_width=True, hide_index=True)
@@ -1133,11 +1267,43 @@ def settings_page(user):
                             create_user(conn, username, display or username, password, role)
                         st.success("사용자를 생성했습니다.")
 
+        with st.expander("사용자 비밀번호 초기화 / Reset User Password / 重置用户密码"):
+            usernames = users["username"].tolist() if not users.empty else []
+            if not usernames:
+                st.info("등록된 사용자가 없습니다.")
+            else:
+                with st.form("admin_reset_pw"):
+                    target_user = st.selectbox("사용자 선택 / User / 用户", usernames)
+                    temp_pw = st.text_input("새 임시 비밀번호 / New Temporary Password / 新临时密码", type="password")
+                    temp_pw2 = st.text_input("임시 비밀번호 확인 / Confirm / 确认", type="password")
+                    if st.form_submit_button("비밀번호 초기화 / Reset Password / 重置密码"):
+                        if len(temp_pw) < 8:
+                            st.error("임시 비밀번호는 8자 이상으로 설정하세요.")
+                        elif temp_pw != temp_pw2:
+                            st.error("비밀번호가 일치하지 않습니다.")
+                        else:
+                            change_password(target_user, temp_pw)
+                            st.success(f"{target_user} 계정의 비밀번호를 초기화했습니다.")
+
 
 def main():
     if "lang" not in st.session_state:
         st.session_state.lang = "ko"
+
+    loading = st.empty()
+    loading.markdown("""
+    <div style="position:fixed;inset:0;z-index:999999;background:#ffffff;display:flex;
+                align-items:center;justify-content:center;flex-direction:column;">
+      <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;
+                  letter-spacing:.12em;color:#B89046;margin-bottom:14px;">VOC INTELLIGENCE</div>
+      <div style="width:42px;height:42px;border:4px solid #eee;border-top-color:#B89046;
+                  border-radius:50%;animation:vocspin 0.9s linear infinite;"></div>
+      <div style="margin-top:16px;font-size:15px;color:#666;">로딩 중입니다 · Loading · 加载中...</div>
+    </div>
+    <style>@keyframes vocspin {to {transform:rotate(360deg);}}</style>
+    """, unsafe_allow_html=True)
     init_db()
+    loading.empty()
     user = require_login()
     render_top_header()
 
