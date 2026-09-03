@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7 UI Refresh Edition"
+APP_VERSION = "V4.7.1 Tooltip & Delete Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -423,6 +423,25 @@ def load_all_audit():
                 ORDER BY id DESC
             """),
             conn,
+        )
+
+def delete_case(voc_id, username):
+    """Permanently delete a VOC case and its audit history.
+
+    This action is intentionally restricted at the UI level to Admin users.
+    """
+    with ENGINE.begin() as conn:
+        existing = conn.execute(
+            select(voc_table.c.voc_id).where(voc_table.c.voc_id == voc_id)
+        ).first()
+        if existing is None:
+            raise RuntimeError(f"{voc_id} VOC를 찾을 수 없습니다.")
+
+        conn.execute(
+            audit_table.delete().where(audit_table.c.voc_id == voc_id)
+        )
+        conn.execute(
+            voc_table.delete().where(voc_table.c.voc_id == voc_id)
         )
 
 def build_excel_backup():
@@ -989,6 +1008,55 @@ def render_top_header():
       h1,h2,h3 { letter-spacing:-.02em; }
       hr { border-color:var(--voc-line); }
 
+
+      div[data-baseweb="tab-list"] {
+        overflow:visible!important;
+      }
+
+      button[data-baseweb="tab"] {
+        position:relative!important;
+        overflow:visible!important;
+      }
+
+      button[data-baseweb="tab"]::after {
+        display:none;
+        position:absolute;
+        top:54px;
+        left:50%;
+        transform:translateX(-50%);
+        z-index:99999;
+        white-space:nowrap;
+        background:#20232A;
+        color:#FFFFFF;
+        font-size:.76rem;
+        font-weight:600;
+        line-height:1;
+        padding:8px 10px;
+        border-radius:8px;
+        box-shadow:0 8px 20px rgba(0,0,0,.18);
+        pointer-events:none;
+      }
+
+      button[data-baseweb="tab"]:hover::after {
+        display:block;
+      }
+
+      button[data-baseweb="tab"]:nth-child(1)::after {
+        content:"Dashboard · 대시보드 · 仪表盘";
+      }
+      button[data-baseweb="tab"]:nth-child(2)::after {
+        content:"AI VOC Analysis · 심층분석 · AI深度分析";
+      }
+      button[data-baseweb="tab"]:nth-child(3)::after {
+        content:"Search & Edit · 검색/수정 · 查询修改";
+      }
+      button[data-baseweb="tab"]:nth-child(4)::after {
+        content:"Translate · 한중영 변환 · 韩中英转换";
+      }
+      button[data-baseweb="tab"]:nth-child(5)::after {
+        content:"Settings · 설정 · 设置";
+      }
+
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
         button[data-baseweb="tab"] { min-width:48px; padding:.3rem .55rem!important; }
@@ -1324,6 +1392,39 @@ def search_edit_page(user, df):
 
     st.subheader("변경 이력 / Audit Log / 变更记录")
     st.dataframe(load_audit(selected), use_container_width=True, hide_index=True)
+
+    if user["role"] == "Admin":
+        st.divider()
+        st.subheader("🗑️ VOC 삭제 / Delete VOC / 删除VOC")
+        st.caption(
+            "잘못 등록된 VOC를 중앙 DB에서 완전히 삭제합니다. "
+            "삭제 시 해당 VOC의 변경 이력(Audit Log)도 함께 삭제되며 복구할 수 없습니다."
+        )
+        with st.expander("영구 삭제 / Permanent Delete / 永久删除"):
+            st.warning(
+                f"⚠️ 선택된 VOC: {selected}\n\n"
+                "삭제하려면 아래 입력창에 VOC ID를 정확히 입력하세요."
+            )
+            confirm_delete = st.text_input(
+                "VOC ID 확인 / Confirm VOC ID / 确认VOC ID",
+                key=f"delete_confirm_{selected}",
+                placeholder=selected
+            )
+            if st.button(
+                "🗑️ 이 VOC 영구 삭제 / Permanently Delete / 永久删除",
+                type="secondary",
+                use_container_width=True,
+                key=f"delete_btn_{selected}"
+            ):
+                if confirm_delete.strip() != selected:
+                    st.error("VOC ID가 일치하지 않습니다. 삭제하지 않았습니다.")
+                else:
+                    try:
+                        delete_case(selected, user["username"])
+                        st.success(f"✅ {selected} 삭제 완료")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"삭제 실패: {e}")
 
 def translation_page(provider, api_key, model):
     st.header("Translate")
