@@ -1,0 +1,17 @@
+VOC Intelligence macOS 보안 경고 안내
+
+이 프로그램은 개인용으로 생성된 로컬 앱이라 Apple Developer ID로 서명/공증(notarization)되어 있지 않습니다.
+따라서 인터넷에서 내려받은 ZIP을 풀면 macOS Gatekeeper가 '확인되지 않은 개발자/보안되지 않은 파일' 경고를 표시할 수 있습니다.
+
+가장 간단한 방법:
+1) 터미널을 엽니다.
+2) 아래 명령에서 경로만 현재 폴더에 맞게 실행합니다.
+
+xattr -dr com.apple.quarantine "/Users/jin/Downloads/VOC_Streamlit_V3_5_2"
+
+이 작업은 해당 폴더에 붙은 다운로드 격리(quarantine) 속성만 제거합니다.
+그 후 VOC Intelligence.app을 다시 더블클릭하면 매번 개인정보 보호 및 보안 설정으로 들어갈 필요가 없습니다.
+
+주의:
+새 버전 ZIP을 다시 다운로드하면 새 폴더에는 quarantine 속성이 다시 붙을 수 있습니다.
+Apple Developer ID 서명 + Apple notarization을 하지 않는 한 인터넷에서 받은 새 앱에 대한 Gatekeeper 경고를 완전히 없앨 수는 없습니다.

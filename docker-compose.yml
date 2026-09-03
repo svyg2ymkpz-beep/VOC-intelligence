@@ -1,0 +1,11 @@
+services:
+  voc-intelligence:
+    build: .
+    container_name: voc-intelligence
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - VOC_DB_PATH=/app/data/voc_intelligence.db

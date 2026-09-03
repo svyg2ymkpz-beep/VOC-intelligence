@@ -1,0 +1,8 @@
+streamlit>=1.40,<2
+pandas>=2.0
+openpyxl>=3.1
+openai>=1.50
+google-genai>=1.0
+requests>=2.31
+SQLAlchemy>=2.0,<3
+psycopg[binary]>=3.2,<4

@@ -1,0 +1,11 @@
+VOC Intelligence V3.5 — Business Edition
+
+주요 변경
+1. 고전 로마 비문 느낌의 VOC 브랜드 아이콘
+2. 현대적인 사내 업무 시스템 UI 유지
+3. Dashboard Today's Action 추가: Response/FACA 기한 초과 및 3일 이내 자동 표시
+4. Dashboard Quick Status Update 추가: Status만 빠르게 변경 + 수정이력 자동 기록
+5. 기존 VOC 등록/심층분석/수정/최근 VOC/번역/설정 기능 유지
+6. 기존 Excel DB와 호환
+
+DB 이전: 기존 data/VOC_Master_AI.xlsx를 V3.5 data 폴더에 복사하세요.
