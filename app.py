@@ -11,6 +11,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime, date, timedelta
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
 
 import pandas as pd
 import streamlit as st
@@ -29,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.6.1 Integrated Edition"
+APP_VERSION = "V4.6.2 Progress Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -762,6 +763,58 @@ def deep_analyze(text, provider, api_key, model):
         return result
     raise last_error
 
+def run_analysis_with_progress(text, provider, api_key, model):
+    """Run the blocking AI request in a worker thread while the UI shows estimated progress.
+
+    Gemini/OpenAI do not expose true token-by-token job completion for this request,
+    so the percentage is intentionally labeled as an estimate. It never reaches
+    100% until the actual analysis has completed.
+    """
+    progress = st.progress(0, text="분석 준비 중 · Preparing analysis · 准备分析")
+    status = st.empty()
+    started = time.time()
+
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(deep_analyze, text, provider, api_key, model)
+        while not future.done():
+            elapsed = int(time.time() - started)
+
+            if elapsed < 3:
+                pct, stage = 8, "VOC 원문과 분석 조건을 확인하고 있습니다. / Checking input"
+            elif elapsed < 10:
+                pct, stage = 18, "AI 서버에 분석 요청을 전송하고 있습니다. / Sending request"
+            elif elapsed < 25:
+                pct, stage = 30, "핵심 정보와 SPEC/Actual을 추출하고 있습니다. / Extracting facts"
+            elif elapsed < 45:
+                pct, stage = 42, "VOC 원인 가설과 확인 항목을 분석하고 있습니다. / Analyzing checkpoints"
+            elif elapsed < 75:
+                pct, stage = 55, "AI 응답을 기다리고 있습니다. / Waiting for AI response"
+            elif elapsed < 110:
+                pct, stage = 66, "심층 분석을 계속 진행하고 있습니다. / Deep analysis in progress"
+            elif elapsed < 150:
+                pct, stage = 75, "결과 구조화 및 업무 항목 정리 중입니다. / Structuring results"
+            elif elapsed < 210:
+                pct, stage = 84, "한·중·영 요약을 확인하고 있습니다. / Checking multilingual summaries"
+            else:
+                pct = min(95, 84 + ((elapsed - 210) // 30 + 1) * 2)
+                stage = "AI 응답이 평소보다 오래 걸리고 있습니다. 계속 처리 중입니다. / Still processing"
+
+            progress.progress(
+                int(pct),
+                text=f"예상 진행률 {int(pct)}% · Estimated progress · 已用 {elapsed}초"
+            )
+            status.info(f"⏳ {stage}  ·  경과시간 {elapsed}초")
+            time.sleep(1)
+
+        result = future.result()
+
+    elapsed = int(time.time() - started)
+    progress.progress(100, text=f"분석 완료 100% · Completed · 총 {elapsed}초")
+    status.success(f"✅ AI 분석이 완료되었습니다. 총 소요시간: {elapsed}초")
+    time.sleep(0.4)
+    return result
+
+
 def translate_with_provider(text, provider, api_key, model):
     if provider == "Local / No API" or not api_key:
         raise RuntimeError("한·중·영 변환은 AI Provider와 API Key가 필요합니다.")
@@ -942,36 +995,35 @@ def ai_analysis_page(user, provider, api_key, model):
         if not original.strip():
             st.warning("VOC 원문을 입력하세요.")
         else:
-            with st.spinner("AI 분석 중..."):
-                try:
-                    r = deep_analyze(original, provider, api_key, model)
-                    mappings = [
-                        "product","material_type","lot_no","quantity","process",
-                        "failure_category","failure_detail","issue_summary",
-                        "summary_ko","summary_zh","summary_en","spec","actual",
-                        "judgement","occurrence_condition","defect_rate",
-                        "customer_impact","priority","response_due","faca_due"
-                    ]
-                    for k in mappings:
-                        val = r.get(k, "")
-                        if k == "process" and val not in PROCESSES:
-                            val = ""
-                        if k == "failure_category" and val not in FAILURES:
-                            val = ""
-                        if k == "priority" and val not in PRIORITIES:
-                            val = "High"
-                        st.session_state[f"ai_{k}"] = val
-                    for k in [
-                        "customer_request","internal_action_items","ai_suggested_cause",
-                        "required_check_points","missing_information"
-                    ]:
-                        st.session_state[f"ai_{k}"] = list_to_text(
-                            r.get(k, []), numbered=(k == "customer_request")
-                        )
-                    st.session_state["analysis_source"] = r.get("analysis_source","")
-                    st.session_state["analysis_warning"] = r.get("analysis_warning","")
-                except Exception as e:
-                    st.error(f"AI 분석 오류: {e}")
+            try:
+                r = run_analysis_with_progress(original, provider, api_key, model)
+                mappings = [
+                    "product","material_type","lot_no","quantity","process",
+                    "failure_category","failure_detail","issue_summary",
+                    "summary_ko","summary_zh","summary_en","spec","actual",
+                    "judgement","occurrence_condition","defect_rate",
+                    "customer_impact","priority","response_due","faca_due"
+                ]
+                for k in mappings:
+                    val = r.get(k, "")
+                    if k == "process" and val not in PROCESSES:
+                        val = ""
+                    if k == "failure_category" and val not in FAILURES:
+                        val = ""
+                    if k == "priority" and val not in PRIORITIES:
+                        val = "High"
+                    st.session_state[f"ai_{k}"] = val
+                for k in [
+                    "customer_request","internal_action_items","ai_suggested_cause",
+                    "required_check_points","missing_information"
+                ]:
+                    st.session_state[f"ai_{k}"] = list_to_text(
+                        r.get(k, []), numbered=(k == "customer_request")
+                    )
+                st.session_state["analysis_source"] = r.get("analysis_source","")
+                st.session_state["analysis_warning"] = r.get("analysis_warning","")
+            except Exception as e:
+                st.error(f"AI 분석 오류: {e}")
 
     if st.session_state.get("analysis_source"):
         st.success(f"분석 완료 · {st.session_state['analysis_source']}")
@@ -1327,7 +1379,7 @@ def main():
         server_key = ""
         if provider == "Google Gemini":
             server_key = _secret("GEMINI_API_KEY", "")
-            model = _secret("GEMINI_MODEL", "gemini-flash-latest")
+            model = _secret("GEMINI_MODEL", "gemini-3.6-flash")
             key_label = "Gemini"
         elif provider == "OpenRouter Free":
             server_key = _secret("OPENROUTER_API_KEY", "")
