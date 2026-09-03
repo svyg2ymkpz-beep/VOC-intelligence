@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.6.2 Progress Edition"
+APP_VERSION = "V4.7 UI Refresh Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -857,7 +857,15 @@ def require_login():
     if st.session_state.user:
         return st.session_state.user
 
-    st.title("VOC Intelligence")
+    st.markdown("""
+    <div style="max-width:540px;margin:3.5rem auto 1.2rem auto;text-align:center;">
+      <div style="font-family:Georgia,'Times New Roman',serif;letter-spacing:.14em;
+                  font-size:1.8rem;font-weight:700;color:#9A742D;">VOC INTELLIGENCE</div>
+      <div style="margin-top:.35rem;color:#6B7280;font-size:.9rem;">
+        Korea HQ ↔ China Entity · Shared VOC Workspace
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
     st.caption(APP_VERSION)
     lang_name = st.selectbox(
         "Language / 언어 / 语言",
@@ -885,105 +893,190 @@ def require_login():
 def render_top_header():
     st.markdown("""
     <style>
-      .block-container {padding-top:.65rem; padding-bottom:2rem; max-width:1500px;}
-      [data-testid="stSidebar"] {display:none;}
-      section[data-testid="stSidebar"] {display:none;}
-      .voc-topbar {
-        display:flex; align-items:center; justify-content:space-between;
-        padding:.45rem 0 .65rem 0;
-        border-bottom:1px solid rgba(168,122,36,.28);
-        margin-bottom:.7rem;
+      :root {
+        --voc-bg:#F6F7F9;
+        --voc-card:#FFFFFF;
+        --voc-text:#20232A;
+        --voc-muted:#6B7280;
+        --voc-line:#E7E9EE;
+        --voc-gold:#B58A3A;
+        --voc-gold-soft:#F7F1E5;
       }
-      .voc-brand {
-        display:flex; align-items:center; gap:.75rem;
+      .stApp { background:var(--voc-bg); color:var(--voc-text); }
+      .block-container { padding-top:.75rem; padding-bottom:2.5rem; max-width:1440px; }
+      [data-testid="stSidebar"], section[data-testid="stSidebar"] { display:none; }
+      header[data-testid="stHeader"] { background:transparent; }
+
+      .voc-shell {
+        background:var(--voc-card);
+        border:1px solid var(--voc-line);
+        border-radius:18px;
+        padding:14px 18px;
+        margin-bottom:14px;
+        box-shadow:0 5px 22px rgba(24,28,36,.045);
+      }
+      .voc-brand-row {
+        display:flex; align-items:center; justify-content:space-between; gap:18px;
       }
       .voc-brand-title {
-        font-family: Georgia, 'Times New Roman', serif;
-        letter-spacing:.12em;
-        font-size:1.45rem;
+        font-family:Georgia,'Times New Roman',serif;
+        letter-spacing:.13em;
+        font-size:1.28rem;
         font-weight:700;
-        color:#B89046;
+        color:#9A742D;
       }
-      .voc-version {
-        font-size:.75rem;
-        opacity:.6;
+      .voc-version { font-size:.74rem; color:var(--voc-muted); margin-top:3px; }
+      .voc-chip {
+        display:inline-flex; align-items:center; gap:6px;
+        background:#F8F4EA; color:#80601F;
+        border:1px solid #E9DDBF;
+        border-radius:999px;
+        padding:5px 10px;
+        font-size:.74rem;
+        font-weight:650;
+        white-space:nowrap;
       }
-      div[data-testid="stMetric"] {
-        border:1px solid rgba(49,51,63,.10);
-        padding:12px 14px; border-radius:14px;
-        background:rgba(250,250,252,.65);
-      }
-      button[kind="secondary"] {
-        border-radius:10px;
-      }
-      div[data-baseweb="tab-list"] {
-        gap:.3rem;
-        border-bottom:1px solid rgba(168,122,36,.22);
-        padding-bottom:.25rem;
+      .voc-section-note {
+        color:var(--voc-muted);
+        font-size:.88rem;
+        margin-top:-.45rem;
         margin-bottom:1rem;
       }
+      div[data-testid="stMetric"] {
+        border:1px solid var(--voc-line);
+        padding:16px;
+        border-radius:16px;
+        background:#fff;
+        box-shadow:0 3px 14px rgba(24,28,36,.035);
+      }
+      div[data-testid="stMetric"] label { color:var(--voc-muted)!important; }
+      div[data-testid="stMetricValue"] { font-weight:700; }
+
+      .stButton > button, .stDownloadButton > button {
+        border-radius:11px;
+        min-height:2.75rem;
+      }
+      .stTextInput input, .stTextArea textarea, div[data-baseweb="select"] > div {
+        border-radius:10px!important;
+      }
+
+      div[data-baseweb="tab-list"] {
+        gap:.55rem;
+        border:0!important;
+        background:#fff;
+        padding:7px;
+        border-radius:15px;
+        box-shadow:0 3px 14px rgba(24,28,36,.04);
+        margin-bottom:1.2rem;
+      }
       button[data-baseweb="tab"] {
-        font-weight:650;
-        padding:.55rem .9rem;
+        min-width:62px;
+        height:48px;
+        border-radius:11px!important;
+        font-size:1.28rem!important;
+        padding:.4rem .8rem!important;
+      }
+      button[data-baseweb="tab"][aria-selected="true"] {
+        background:var(--voc-gold-soft)!important;
+        color:#8A6827!important;
+      }
+      button[data-baseweb="tab"]:hover { background:#F4F5F7!important; }
+
+      div[data-testid="stVerticalBlockBorderWrapper"] {
+        border-color:var(--voc-line)!important;
+        border-radius:16px!important;
+      }
+      h1,h2,h3 { letter-spacing:-.02em; }
+      hr { border-color:var(--voc-line); }
+
+      @media (max-width:800px) {
+        .block-container { padding-left:.75rem; padding-right:.75rem; }
+        button[data-baseweb="tab"] { min-width:48px; padding:.3rem .55rem!important; }
+        .voc-brand-title { font-size:1.05rem; }
+        .voc-chip { display:none; }
       }
     </style>
     """, unsafe_allow_html=True)
 
-    c1, c2 = st.columns([6,1])
-    with c1:
-        backend_short = "☁ Shared DB" if DATABASE_URL else "💻 Local DB"
-        st.markdown(
-            '<div class="voc-topbar"><div class="voc-brand">'
-            '<div class="voc-brand-title">VOC INTELLIGENCE</div>'
-            f'<div class="voc-version">{APP_VERSION} · {backend_short}</div>'
-            '</div></div>',
-            unsafe_allow_html=True
-        )
-    with c2:
-        if ICON_PATH.exists():
-            st.image(str(ICON_PATH), width=72)
-
+    backend_short = "Shared DB" if DATABASE_URL else "Local DB"
+    st.markdown(
+        f"""
+        <div class="voc-shell">
+          <div class="voc-brand-row">
+            <div>
+              <div class="voc-brand-title">VOC INTELLIGENCE</div>
+              <div class="voc-version">{APP_VERSION} · Korea HQ ↔ China Entity</div>
+            </div>
+            <div class="voc-chip">● {backend_short}</div>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 def dashboard(df):
-    st.header(tr("dashboard"))
+    st.header("Overview")
+    st.markdown(
+        '<div class="voc-section-note">VOC 현황과 우선 대응 항목을 한눈에 확인합니다.</div>',
+        unsafe_allow_html=True
+    )
+
     if df.empty:
         st.info("아직 등록된 VOC가 없습니다. / 暂无VOC数据。")
         return
-    statuses = df["status"].fillna("")
-    metrics = [
-        ("전체 VOC / Total", len(df)),
-        ("Open", int((~statuses.isin(["Closed","Drop"])).sum())),
-        ("Pending", int((statuses == "Pending").sum())),
-        ("Over Due", int((statuses == "Over Due").sum())),
-        ("Drop", int((statuses == "Drop").sum())),
-        ("Closed", int((statuses == "Closed").sum())),
-    ]
-    cols = st.columns(6)
-    for c, (label, val) in zip(cols, metrics):
-        c.metric(label, val)
 
+    statuses = df["status"].fillna("")
     tmp = df.copy()
     tmp["Due"] = tmp.apply(due_bucket, axis=1)
     action = tmp[tmp["Due"].notna()]
-    st.subheader("🔔 Today's Action / 오늘의 Action / 今日Action")
+
+    metrics = [
+        ("Total VOC", len(df)),
+        ("Active", int((~statuses.isin(["Closed", "Drop"])).sum())),
+        ("Pending", int((statuses == "Pending").sum())),
+        ("Due / Overdue", len(action)),
+        ("Closed", int((statuses == "Closed").sum())),
+    ]
+    cols = st.columns(5)
+    for c, (label, value) in zip(cols, metrics):
+        c.metric(label, value)
+
+    st.subheader("Priority Actions")
     if action.empty:
-        st.success("긴급 Due 항목 없음 / No urgent due items / 暂无紧急到期项目")
+        st.success("현재 긴급 Due 항목이 없습니다. / No urgent due items / 暂无紧急到期项目")
     else:
         st.dataframe(
-            action[["voc_id","customer","product","status","response_due","faca_due","Due","dri"]],
-            use_container_width=True, hide_index=True
+            action[
+                ["voc_id", "customer", "product", "status",
+                 "response_due", "faca_due", "Due", "dri"]
+            ],
+            use_container_width=True,
+            hide_index=True
         )
+
+    st.subheader("Recent VOC")
+    recent_cols = [
+        "voc_id", "received_date", "customer", "product",
+        "failure_category", "priority", "status", "dri"
+    ]
+    st.dataframe(df[recent_cols].head(8), use_container_width=True, hide_index=True)
 
     c1, c2 = st.columns(2)
     with c1:
-        st.subheader("고객사별 VOC / By Customer / 按客户")
-        st.bar_chart(df["customer"].replace("", "(Blank)").value_counts().head(10))
+        with st.container(border=True):
+            st.markdown("#### Customer")
+            st.bar_chart(df["customer"].replace("", "(Blank)").value_counts().head(8))
     with c2:
-        st.subheader("불량 분류 / Failure Category / 不良分类")
-        st.bar_chart(df["failure_category"].replace("", "(Blank)").value_counts().head(10))
+        with st.container(border=True):
+            st.markdown("#### Failure Category")
+            st.bar_chart(df["failure_category"].replace("", "(Blank)").value_counts().head(8))
 
 def ai_analysis_page(user, provider, api_key, model):
-    st.header("🧠 " + tr("analysis"))
+    st.header("AI VOC Analysis")
+    st.markdown(
+        '<div class="voc-section-note">고객 VOC를 구조화하고, NPI 대응에 필요한 핵심 정보와 가설을 정리합니다.</div>',
+        unsafe_allow_html=True
+    )
     st.caption("고객 메일·WeChat·VOC 원문을 그대로 붙여넣으면 AI가 항목별로 구조화합니다.")
 
     original = st.text_area(
@@ -1136,7 +1229,7 @@ def ai_analysis_page(user, provider, api_key, model):
                 st.error(f"저장 실패: {e}")
 
 def search_edit_page(user, df):
-    st.header("✏️ " + tr("search"))
+    st.header("VOC Search & Edit")
     if df.empty:
         st.info("저장된 VOC가 없습니다. / 暂无已保存VOC。")
         return
@@ -1233,7 +1326,7 @@ def search_edit_page(user, df):
     st.dataframe(load_audit(selected), use_container_width=True, hide_index=True)
 
 def translation_page(provider, api_key, model):
-    st.header("🌐 " + tr("translate"))
+    st.header("Translate")
     src = st.text_area("업무 문장 / Business Text / 工作文本", height=180)
     if st.button("🌐 변환 / Translate / 翻译"):
         if not src.strip():
@@ -1252,7 +1345,7 @@ def translation_page(provider, api_key, model):
                 st.error(str(e))
 
 def settings_page(user):
-    st.header("⚙️ " + tr("settings"))
+    st.header("Settings")
     st.caption(f"Database Backend: {DB_BACKEND}")
     if DATABASE_URL:
         st.success("☁️ 중앙 PostgreSQL DB 연결됨 / Shared DB Connected / 已连接共享数据库")
@@ -1284,9 +1377,12 @@ def settings_page(user):
         st.metric("Server AI Secret", ", ".join(configured) if configured else "Not configured")
     st.caption("공개 테스트 배포에서는 실제 고객/LOT/기밀 자료 대신 더미 또는 비식별 데이터를 사용하세요.")
 
-    if user["role"] == "Admin":
+    if user["role"] in ("Admin", "Editor"):
         st.subheader("📦 중앙 DB 백업 / Database Backup / 数据库备份")
-        st.caption("현재 Supabase 중앙 DB의 VOC 전체 데이터와 변경 이력을 Excel 파일로 내려받습니다. 사용자 비밀번호 정보는 포함하지 않습니다.")
+        st.caption(
+            "Admin과 Editor는 중앙 DB의 VOC 전체 데이터와 변경 이력을 Excel로 내려받을 수 있습니다. "
+            "사용자 비밀번호 정보는 포함하지 않습니다."
+        )
         try:
             backup_bytes = build_excel_backup()
             backup_name = f"VOC_DB_Backup_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
@@ -1300,6 +1396,7 @@ def settings_page(user):
         except Exception as e:
             st.error(f"백업 파일 생성 실패: {e}")
 
+    if user["role"] == "Admin":
         st.subheader("사용자 관리 / User Management / 用户管理")
         users = list_users_df()
         st.dataframe(users, use_container_width=True, hide_index=True)
@@ -1414,13 +1511,32 @@ def main():
 
     df = load_cases()
 
-    tabs = st.tabs([
-        "📊 대시보드 / Dashboard / 仪表盘",
-        "🧠 AI VOC 분석 / Analysis / AI分析",
-        "✏️ VOC 검색·수정 / Search & Edit / 查询修改",
-        "🌐 한·중·영 변환 / Translate / 韩中英转换",
-        "⚙️ 설정 / Settings / 设置",
-    ])
+    tabs = st.tabs(["⌂", "✦", "⌕", "文", "⚙"])
+
+    st.components.v1.html("""
+    <script>
+    const labels = [
+      "Dashboard · 대시보드 · 仪表盘",
+      "AI VOC Analysis · 심층분석 · AI深度分析",
+      "Search & Edit · 검색/수정 · 查询修改",
+      "Translate · 한중영 변환 · 韩中英转换",
+      "Settings · 설정 · 设置"
+    ];
+    function applyTips() {
+      const doc = window.parent.document;
+      const tabs = doc.querySelectorAll('button[data-baseweb="tab"]');
+      tabs.forEach((tab, i) => {
+        if (labels[i]) {
+          tab.setAttribute("title", labels[i]);
+          tab.setAttribute("aria-label", labels[i]);
+        }
+      });
+    }
+    applyTips();
+    setTimeout(applyTips, 300);
+    setTimeout(applyTips, 1000);
+    </script>
+    """, height=0)
 
     with tabs[0]:
         dashboard(df)
