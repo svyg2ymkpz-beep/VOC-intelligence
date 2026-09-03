@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.1 Tooltip & Delete Edition"
+APP_VERSION = "V4.7.2 Interactive Navigation Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1009,53 +1009,55 @@ def render_top_header():
       hr { border-color:var(--voc-line); }
 
 
+      /* Interactive navigation: icon normally, label on hover */
       div[data-baseweb="tab-list"] {
         overflow:visible!important;
+        align-items:center;
       }
 
       button[data-baseweb="tab"] {
         position:relative!important;
-        overflow:visible!important;
+        overflow:hidden!important;
+        width:58px;
+        min-width:58px!important;
+        max-width:58px;
+        transition:width .20s ease, max-width .20s ease, background .20s ease,
+                   color .20s ease, box-shadow .20s ease!important;
+        white-space:nowrap!important;
+      }
+
+      button[data-baseweb="tab"]:hover {
+        width:150px;
+        max-width:150px;
+        background:#F4F5F7!important;
+      }
+
+      button[data-baseweb="tab"] > div {
+        transition:opacity .12s ease!important;
       }
 
       button[data-baseweb="tab"]::after {
         display:none;
-        position:absolute;
-        top:54px;
-        left:50%;
-        transform:translateX(-50%);
-        z-index:99999;
-        white-space:nowrap;
-        background:#20232A;
-        color:#FFFFFF;
-        font-size:.76rem;
-        font-weight:600;
+        font-size:.82rem;
+        font-weight:650;
         line-height:1;
-        padding:8px 10px;
-        border-radius:8px;
-        box-shadow:0 8px 20px rgba(0,0,0,.18);
-        pointer-events:none;
+        white-space:nowrap;
+        color:#20232A;
+      }
+
+      button[data-baseweb="tab"]:hover > div {
+        display:none!important;
       }
 
       button[data-baseweb="tab"]:hover::after {
-        display:block;
+        display:inline-block;
       }
 
-      button[data-baseweb="tab"]:nth-child(1)::after {
-        content:"Dashboard · 대시보드 · 仪表盘";
-      }
-      button[data-baseweb="tab"]:nth-child(2)::after {
-        content:"AI VOC Analysis · 심층분석 · AI深度分析";
-      }
-      button[data-baseweb="tab"]:nth-child(3)::after {
-        content:"Search & Edit · 검색/수정 · 查询修改";
-      }
-      button[data-baseweb="tab"]:nth-child(4)::after {
-        content:"Translate · 한중영 변환 · 韩中英转换";
-      }
-      button[data-baseweb="tab"]:nth-child(5)::after {
-        content:"Settings · 설정 · 设置";
-      }
+      button[data-baseweb="tab"]:nth-child(1):hover::after { content:"Dashboard"; }
+      button[data-baseweb="tab"]:nth-child(2):hover::after { content:"AI 분석"; }
+      button[data-baseweb="tab"]:nth-child(3):hover::after { content:"VOC 검색"; }
+      button[data-baseweb="tab"]:nth-child(4):hover::after { content:"Translate"; }
+      button[data-baseweb="tab"]:nth-child(5):hover::after { content:"Settings"; }
 
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
@@ -1298,26 +1300,101 @@ def ai_analysis_page(user, provider, api_key, model):
 
 def search_edit_page(user, df):
     st.header("VOC Search & Edit")
+    st.markdown(
+        '<div class="voc-section-note">VOC를 검색하고 수정합니다. Admin은 목록 오른쪽 × 버튼으로 잘못 등록된 VOC를 삭제할 수 있습니다.</div>',
+        unsafe_allow_html=True
+    )
+
     if df.empty:
         st.info("저장된 VOC가 없습니다. / 暂无已保存VOC。")
         return
-    q = st.text_input("VOC 검색 / Search / 搜索", placeholder="VOC ID / Product / LOT / Customer")
+
+    q = st.text_input(
+        "VOC 검색 / Search / 搜索",
+        placeholder="VOC ID / Product / LOT / Customer"
+    )
+
     show = df.copy()
     if q:
         mask = pd.Series(False, index=show.index)
-        for col in ["voc_id","product","lot_no","customer","failure_category","issue_summary"]:
-            mask |= show[col].fillna("").astype(str).str.contains(q, case=False, na=False)
+        for col in [
+            "voc_id", "product", "lot_no", "customer",
+            "failure_category", "issue_summary"
+        ]:
+            mask |= show[col].fillna("").astype(str).str.contains(
+                q, case=False, na=False
+            )
         show = show[mask]
 
-    st.dataframe(
-        show[["voc_id","received_date","customer","product","lot_no","failure_category","status","dri","updated_at"]],
-        use_container_width=True, hide_index=True
-    )
-    ids = show["voc_id"].tolist()
-    if not ids:
+    if show.empty:
         st.warning("검색 결과가 없습니다.")
         return
-    selected = st.selectbox("수정할 VOC / Select VOC / 选择VOC", ids)
+
+    # Compact row list. Admin sees an X button at the far right.
+    header_cols = st.columns([1.35, 1.25, 1.5, 1.35, 1.1, .9, .55])
+    headers = ["VOC ID", "Date", "Customer", "Product", "Status", "DRI", ""]
+    for col, label in zip(header_cols, headers):
+        col.markdown(f"**{label}**")
+
+    for _, row in show.head(100).iterrows():
+        voc_id = str(row.get("voc_id", "") or "")
+        cols = st.columns([1.35, 1.25, 1.5, 1.35, 1.1, .9, .55])
+        cols[0].write(voc_id)
+        cols[1].write(str(row.get("received_date", "") or ""))
+        cols[2].write(str(row.get("customer", "") or ""))
+        cols[3].write(str(row.get("product", "") or ""))
+        cols[4].write(str(row.get("status", "") or ""))
+        cols[5].write(str(row.get("dri", "") or ""))
+
+        if user["role"] == "Admin":
+            if cols[6].button(
+                "×",
+                key=f"row_delete_{voc_id}",
+                help=f"{voc_id} 삭제",
+                use_container_width=True
+            ):
+                st.session_state["pending_delete_voc"] = voc_id
+        else:
+            cols[6].write("")
+
+    pending_delete = st.session_state.get("pending_delete_voc")
+    if pending_delete:
+        st.error(
+            f"⚠️ **{pending_delete}** VOC를 삭제하시겠습니까?\n\n"
+            "삭제하면 해당 VOC와 변경 이력(Audit Log)이 중앙 DB에서 영구 삭제되며 복구할 수 없습니다."
+        )
+        dc1, dc2, dc3 = st.columns([1, 1, 4])
+        with dc1:
+            if st.button(
+                "삭제",
+                type="primary",
+                key=f"confirm_delete_{pending_delete}",
+                use_container_width=True
+            ):
+                try:
+                    delete_case(pending_delete, user["username"])
+                    st.session_state.pop("pending_delete_voc", None)
+                    st.success(f"✅ {pending_delete} 삭제 완료")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"삭제 실패: {e}")
+        with dc2:
+            if st.button(
+                "취소",
+                key=f"cancel_delete_{pending_delete}",
+                use_container_width=True
+            ):
+                st.session_state.pop("pending_delete_voc", None)
+                st.rerun()
+
+    st.divider()
+
+    ids = show["voc_id"].astype(str).tolist()
+    selected = st.selectbox(
+        "상세보기 / 수정할 VOC / Select VOC / 选择VOC",
+        ids,
+        key="search_selected_voc"
+    )
     rec = load_case(selected)
     if not rec:
         return
@@ -1326,105 +1403,139 @@ def search_edit_page(user, df):
         st.json(rec)
         return
 
-    e1,e2,e3 = st.columns(3)
+    e1, e2, e3 = st.columns(3)
     with e1:
-        customer = st.text_input(UI["customer"], value=rec.get("customer") or "", key="ed_customer")
-        dri = st.text_input(UI["dri"], value=rec.get("dri") or "", key="ed_dri")
-        product = st.text_input(UI["product"], value=rec.get("product") or "", key="ed_product")
-        lot = st.text_input(UI["lot"], value=rec.get("lot_no") or "", key="ed_lot")
+        customer = st.text_input(
+            UI["customer"], value=rec.get("customer") or "", key="ed_customer"
+        )
+        dri = st.text_input(
+            UI["dri"], value=rec.get("dri") or "", key="ed_dri"
+        )
+        product = st.text_input(
+            UI["product"], value=rec.get("product") or "", key="ed_product"
+        )
+        lot = st.text_input(
+            UI["lot"], value=rec.get("lot_no") or "", key="ed_lot"
+        )
+
     with e2:
         process_val = rec.get("process") or ""
         process = st.selectbox(
             UI["process"], PROCESSES,
             index=PROCESSES.index(process_val) if process_val in PROCESSES else 0,
-            format_func=lambda x: PROCESS_DISPLAY.get(x,x), key="ed_process"
+            format_func=lambda x: PROCESS_DISPLAY.get(x, x),
+            key="ed_process"
         )
+
         failure_val = rec.get("failure_category") or ""
         failure = st.selectbox(
             UI["failure"], FAILURES,
             index=FAILURES.index(failure_val) if failure_val in FAILURES else 0,
-            format_func=lambda x: FAILURE_DISPLAY.get(x,x), key="ed_failure"
+            format_func=lambda x: FAILURE_DISPLAY.get(x, x),
+            key="ed_failure"
         )
+
         priority_val = rec.get("priority") or "High"
         priority = st.selectbox(
             UI["priority"], PRIORITIES,
             index=PRIORITIES.index(priority_val) if priority_val in PRIORITIES else 2,
             key="ed_priority"
         )
+
         status_val = rec.get("status") or "Open"
         status = st.selectbox(
             UI["status"], STATUS_OPTIONS,
             index=STATUS_OPTIONS.index(status_val) if status_val in STATUS_OPTIONS else 0,
             key="ed_status"
         )
-    with e3:
-        response_due = st.text_input(UI["response_due"], value=rec.get("response_due") or "", key="ed_response_due")
-        faca_due = st.text_input(UI["faca_due"], value=rec.get("faca_due") or "", key="ed_faca_due")
-        faca_no = st.text_input(UI["faca_no"], value=rec.get("faca_no") or "", key="ed_faca_no")
 
-    summary = st.text_area(UI["summary"], value=rec.get("issue_summary") or "", key="ed_summary")
-    request = st.text_area(UI["request"], value=rec.get("customer_request") or "", key="ed_request")
-    actions = st.text_area(UI["internal"], value=rec.get("internal_action_items") or "", key="ed_actions")
-    checks = st.text_area(UI["check"], value=rec.get("required_check_points") or "", key="ed_checks")
-    root = st.text_area(UI["root"], value=rec.get("confirmed_root_cause") or "", key="ed_root")
-    escape = st.text_area(UI["escape"], value=rec.get("escape_cause") or "", key="ed_escape")
-    corrective = st.text_area(UI["corrective"], value=rec.get("corrective_action") or "", key="ed_corrective")
-    verification = st.text_area(UI["verification"], value=rec.get("verification_result") or "", key="ed_verification")
+    with e3:
+        response_due = st.text_input(
+            UI["response_due"],
+            value=rec.get("response_due") or "",
+            key="ed_response_due"
+        )
+        faca_due = st.text_input(
+            UI["faca_due"],
+            value=rec.get("faca_due") or "",
+            key="ed_faca_due"
+        )
+        faca_no = st.text_input(
+            UI["faca_no"],
+            value=rec.get("faca_no") or "",
+            key="ed_faca_no"
+        )
+
+    summary = st.text_area(
+        UI["summary"], value=rec.get("issue_summary") or "", key="ed_summary"
+    )
+    request = st.text_area(
+        UI["request"], value=rec.get("customer_request") or "", key="ed_request"
+    )
+    actions = st.text_area(
+        UI["internal"], value=rec.get("internal_action_items") or "", key="ed_actions"
+    )
+    checks = st.text_area(
+        UI["check"], value=rec.get("required_check_points") or "", key="ed_checks"
+    )
+    root = st.text_area(
+        UI["root"], value=rec.get("confirmed_root_cause") or "", key="ed_root"
+    )
+    escape = st.text_area(
+        UI["escape"], value=rec.get("escape_cause") or "", key="ed_escape"
+    )
+    corrective = st.text_area(
+        UI["corrective"], value=rec.get("corrective_action") or "", key="ed_corrective"
+    )
+    verification = st.text_area(
+        UI["verification"],
+        value=rec.get("verification_result") or "",
+        key="ed_verification"
+    )
 
     update_summary = st.text_input(
         "이번 수정 내용 / Update Summary / 本次修改内容",
         placeholder="예: 불량 Sample 확보 및 FACA 원인분석 결과 업데이트"
     )
-    if st.button("💾 수정 내용 저장 / Save Changes / 保存修改", type="primary", use_container_width=True):
+
+    if st.button(
+        "💾 수정 내용 저장 / Save Changes / 保存修改",
+        type="primary",
+        use_container_width=True
+    ):
         if not update_summary.strip():
             st.warning("수정 이력을 입력해주세요.")
         else:
-            update_case(selected, {
-                "customer": customer, "dri": dri, "product": product, "lot_no": lot,
-                "process": process, "failure_category": failure, "priority": priority,
-                "status": status, "response_due": response_due, "faca_due": faca_due,
-                "faca_no": faca_no, "issue_summary": summary, "customer_request": request,
-                "internal_action_items": actions, "required_check_points": checks,
-                "confirmed_root_cause": root, "escape_cause": escape,
-                "corrective_action": corrective, "verification_result": verification,
-            }, user["username"], update_summary.strip())
+            update_case(
+                selected,
+                {
+                    "customer": customer,
+                    "dri": dri,
+                    "product": product,
+                    "lot_no": lot,
+                    "process": process,
+                    "failure_category": failure,
+                    "priority": priority,
+                    "status": status,
+                    "response_due": response_due,
+                    "faca_due": faca_due,
+                    "faca_no": faca_no,
+                    "issue_summary": summary,
+                    "customer_request": request,
+                    "internal_action_items": actions,
+                    "required_check_points": checks,
+                    "confirmed_root_cause": root,
+                    "escape_cause": escape,
+                    "corrective_action": corrective,
+                    "verification_result": verification,
+                },
+                user["username"],
+                update_summary.strip()
+            )
             st.success("✅ 수정 완료")
 
     st.subheader("변경 이력 / Audit Log / 变更记录")
     st.dataframe(load_audit(selected), use_container_width=True, hide_index=True)
-
-    if user["role"] == "Admin":
-        st.divider()
-        st.subheader("🗑️ VOC 삭제 / Delete VOC / 删除VOC")
-        st.caption(
-            "잘못 등록된 VOC를 중앙 DB에서 완전히 삭제합니다. "
-            "삭제 시 해당 VOC의 변경 이력(Audit Log)도 함께 삭제되며 복구할 수 없습니다."
-        )
-        with st.expander("영구 삭제 / Permanent Delete / 永久删除"):
-            st.warning(
-                f"⚠️ 선택된 VOC: {selected}\n\n"
-                "삭제하려면 아래 입력창에 VOC ID를 정확히 입력하세요."
-            )
-            confirm_delete = st.text_input(
-                "VOC ID 확인 / Confirm VOC ID / 确认VOC ID",
-                key=f"delete_confirm_{selected}",
-                placeholder=selected
-            )
-            if st.button(
-                "🗑️ 이 VOC 영구 삭제 / Permanently Delete / 永久删除",
-                type="secondary",
-                use_container_width=True,
-                key=f"delete_btn_{selected}"
-            ):
-                if confirm_delete.strip() != selected:
-                    st.error("VOC ID가 일치하지 않습니다. 삭제하지 않았습니다.")
-                else:
-                    try:
-                        delete_case(selected, user["username"])
-                        st.success(f"✅ {selected} 삭제 완료")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"삭제 실패: {e}")
 
 def translation_page(provider, api_key, model):
     st.header("Translate")
@@ -1613,31 +1724,6 @@ def main():
     df = load_cases()
 
     tabs = st.tabs(["⌂", "✦", "⌕", "文", "⚙"])
-
-    st.components.v1.html("""
-    <script>
-    const labels = [
-      "Dashboard · 대시보드 · 仪表盘",
-      "AI VOC Analysis · 심층분석 · AI深度分析",
-      "Search & Edit · 검색/수정 · 查询修改",
-      "Translate · 한중영 변환 · 韩中英转换",
-      "Settings · 설정 · 设置"
-    ];
-    function applyTips() {
-      const doc = window.parent.document;
-      const tabs = doc.querySelectorAll('button[data-baseweb="tab"]');
-      tabs.forEach((tab, i) => {
-        if (labels[i]) {
-          tab.setAttribute("title", labels[i]);
-          tab.setAttribute("aria-label", labels[i]);
-        }
-      });
-    }
-    applyTips();
-    setTimeout(applyTips, 300);
-    setTimeout(applyTips, 1000);
-    </script>
-    """, height=0)
 
     with tabs[0]:
         dashboard(df)
