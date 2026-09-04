@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.3 Reliable Navigation Edition"
+APP_VERSION = "V4.7.4 Sticky Navigation Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1009,14 +1009,24 @@ def render_top_header():
       hr { border-color:var(--voc-line); }
 
 
-      /* Reliable icon navigation buttons */
-      .voc-nav-wrap {
+      /* Sticky, high-visibility navigation */
+      .st-key-top_navigation {
+        position:sticky!important;
+        top:.55rem!important;
+        z-index:9999!important;
+        background:rgba(246,247,249,.96)!important;
+        backdrop-filter:blur(10px);
+        -webkit-backdrop-filter:blur(10px);
+        padding:.38rem 0 .45rem 0!important;
+        margin-bottom:.65rem!important;
+      }
+
+      .st-key-top_navigation > div {
         background:#FFFFFF;
         border:1px solid var(--voc-line);
-        border-radius:15px;
-        padding:7px;
-        margin-bottom:1.1rem;
-        box-shadow:0 3px 14px rgba(24,28,36,.04);
+        border-radius:17px;
+        padding:8px 10px;
+        box-shadow:0 8px 28px rgba(24,28,36,.08);
       }
 
       .st-key-nav_dashboard button,
@@ -1025,13 +1035,15 @@ def render_top_header():
       .st-key-nav_translate button,
       .st-key-nav_settings button {
         width:100%;
-        height:46px;
-        min-height:46px;
-        border:0!important;
-        border-radius:10px!important;
+        height:58px;
+        min-height:58px;
+        border:1px solid transparent!important;
+        border-radius:12px!important;
         background:transparent!important;
-        font-size:1.18rem!important;
-        transition:background .18s ease, color .18s ease!important;
+        font-size:1.55rem!important;
+        font-weight:700!important;
+        transition:background .18s ease, color .18s ease,
+                   border-color .18s ease, transform .18s ease!important;
       }
 
       .st-key-nav_dashboard button:hover,
@@ -1041,6 +1053,8 @@ def render_top_header():
       .st-key-nav_settings button:hover {
         background:#F7F1E5!important;
         color:#8A6827!important;
+        border-color:#E8D6AE!important;
+        transform:translateY(-1px);
       }
 
       .st-key-nav_dashboard button:hover p,
@@ -1053,33 +1067,41 @@ def render_top_header():
 
       .st-key-nav_dashboard button:hover p::after {
         content:"Dashboard";
-        font-size:.83rem;
-        font-weight:700;
+        font-size:.88rem;
+        font-weight:750;
       }
       .st-key-nav_analysis button:hover p::after {
         content:"AI 분석";
-        font-size:.83rem;
-        font-weight:700;
+        font-size:.88rem;
+        font-weight:750;
       }
       .st-key-nav_search button:hover p::after {
         content:"VOC 검색";
-        font-size:.83rem;
-        font-weight:700;
+        font-size:.88rem;
+        font-weight:750;
       }
       .st-key-nav_translate button:hover p::after {
         content:"Translate";
-        font-size:.83rem;
-        font-weight:700;
+        font-size:.88rem;
+        font-weight:750;
       }
       .st-key-nav_settings button:hover p::after {
         content:"Settings";
-        font-size:.83rem;
-        font-weight:700;
+        font-size:.88rem;
+        font-weight:750;
       }
 
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
-        button[data-baseweb="tab"] { min-width:48px; padding:.3rem .55rem!important; }
+        .st-key-nav_dashboard button,
+        .st-key-nav_analysis button,
+        .st-key-nav_search button,
+        .st-key-nav_translate button,
+        .st-key-nav_settings button {
+          height:52px;
+          min-height:52px;
+          font-size:1.35rem!important;
+        }
         .voc-brand-title { font-size:1.05rem; }
         .voc-chip { display:none; }
       }
@@ -1744,62 +1766,73 @@ def main():
     if "current_page" not in st.session_state:
         st.session_state.current_page = "dashboard"
 
-    st.markdown('<div class="voc-nav-wrap">', unsafe_allow_html=True)
-    n1, n2, n3, n4, n5 = st.columns(5)
+    with st.container(key="top_navigation"):
+        n1, n2, n3, n4, n5 = st.columns(5)
 
-    with n1:
-        with st.container(key="nav_dashboard"):
-            if st.button(
-                "⌂",
-                key="nav_btn_dashboard",
-                help="Dashboard · 대시보드 · 仪表盘",
-                use_container_width=True
-            ):
-                st.session_state.current_page = "dashboard"
+        with n1:
+            with st.container(key="nav_dashboard"):
+                if st.button(
+                    "⌂",
+                    key="nav_btn_dashboard",
+                    help="Dashboard · 대시보드 · 仪表盘",
+                    use_container_width=True
+                ):
+                    st.session_state.current_page = "dashboard"
 
-    with n2:
-        with st.container(key="nav_analysis"):
-            if st.button(
-                "✦",
-                key="nav_btn_analysis",
-                help="AI VOC Analysis · 심층분석 · AI深度分析",
-                use_container_width=True
-            ):
-                st.session_state.current_page = "analysis"
+        with n2:
+            with st.container(key="nav_analysis"):
+                if st.button(
+                    "✦",
+                    key="nav_btn_analysis",
+                    help="AI VOC Analysis · 심층분석 · AI深度分析",
+                    use_container_width=True
+                ):
+                    st.session_state.current_page = "analysis"
 
-    with n3:
-        with st.container(key="nav_search"):
-            if st.button(
-                "⌕",
-                key="nav_btn_search",
-                help="Search & Edit · VOC 검색/수정 · 查询修改",
-                use_container_width=True
-            ):
-                st.session_state.current_page = "search"
+        with n3:
+            with st.container(key="nav_search"):
+                if st.button(
+                    "⌕",
+                    key="nav_btn_search",
+                    help="Search & Edit · VOC 검색/수정 · 查询修改",
+                    use_container_width=True
+                ):
+                    st.session_state.current_page = "search"
 
-    with n4:
-        with st.container(key="nav_translate"):
-            if st.button(
-                "文",
-                key="nav_btn_translate",
-                help="Translate · 한중영 변환 · 韩中英转换",
-                use_container_width=True
-            ):
-                st.session_state.current_page = "translate"
+        with n4:
+            with st.container(key="nav_translate"):
+                if st.button(
+                    "文",
+                    key="nav_btn_translate",
+                    help="Translate · 한중영 변환 · 韩中英转换",
+                    use_container_width=True
+                ):
+                    st.session_state.current_page = "translate"
 
-    with n5:
-        with st.container(key="nav_settings"):
-            if st.button(
-                "⚙",
-                key="nav_btn_settings",
-                help="Settings · 설정 · 设置",
-                use_container_width=True
-            ):
-                st.session_state.current_page = "settings"
-
-    st.markdown('</div>', unsafe_allow_html=True)
+        with n5:
+            with st.container(key="nav_settings"):
+                if st.button(
+                    "⚙",
+                    key="nav_btn_settings",
+                    help="Settings · 설정 · 设置",
+                    use_container_width=True
+                ):
+                    st.session_state.current_page = "settings"
 
     page = st.session_state.current_page
+    st.markdown(
+        f"""
+        <style>
+          .st-key-nav_{page} button {{
+            background:#F3E8D1!important;
+            color:#8A6827!important;
+            border-color:#D9BD83!important;
+            box-shadow:inset 0 -3px 0 #B58A3A;
+          }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
     if page == "dashboard":
         dashboard(df)
     elif page == "analysis":
