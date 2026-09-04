@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.8.3 Stable Light Edition"
+APP_VERSION = "V4.8.3.1 Stable Light Hotfix"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1926,6 +1926,7 @@ def main():
     loading.empty()
     user = require_login()
     render_top_header()
+    df = load_cases()
 
     # Top control row
     ctl1, ctl2, ctl3, ctl4 = st.columns([1.25, 1.25, 1.8, 1.1])
