@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.9 App Theme Toggle Edition"
+APP_VERSION = "V4.8.0 Clean Dual Theme Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -911,57 +911,69 @@ def require_login():
 
 
 def apply_app_theme():
-    """Apply a deterministic app-level light/dark theme."""
+    """Apply a deterministic app-level light/dark theme.
+
+    The explicit app theme always wins over OS/browser/Streamlit Appearance
+    so Light stays fully light and Dark stays fully dark.
+    """
     theme = st.session_state.get("app_theme", "dark")
 
     if theme == "dark":
-        bg = "#0B0F14"
-        card = "#151B22"
-        text = "#F4F6F8"
-        muted = "#A7B0BB"
-        line = "#303A45"
-        input_bg = "#20252D"
-        soft = "#30291D"
-        hover = "#242B34"
-        shadow = "rgba(0,0,0,.32)"
+        c = {
+            "bg": "#0B0F14",
+            "card": "#151B22",
+            "card2": "#1B222B",
+            "text": "#F4F6F8",
+            "muted": "#A7B0BB",
+            "line": "#303A45",
+            "input": "#20252D",
+            "hover": "#242B34",
+            "gold_soft": "#30291D",
+            "shadow": "rgba(0,0,0,.32)",
+        }
     else:
-        bg = "#F6F7F9"
-        card = "#FFFFFF"
-        text = "#20232A"
-        muted = "#6B7280"
-        line = "#E7E9EE"
-        input_bg = "#FFFFFF"
-        soft = "#F7F1E5"
-        hover = "#F1F3F5"
-        shadow = "rgba(24,28,36,.08)"
+        c = {
+            "bg": "#F6F7F9",
+            "card": "#FFFFFF",
+            "card2": "#FAFBFC",
+            "text": "#20232A",
+            "muted": "#6B7280",
+            "line": "#E7E9EE",
+            "input": "#FFFFFF",
+            "hover": "#F1F3F5",
+            "gold_soft": "#F7F1E5",
+            "shadow": "rgba(24,28,36,.08)",
+        }
 
     st.markdown(
         f"""
         <style>
           :root {{
-            --voc-bg:{bg}!important;
-            --voc-card:{card}!important;
-            --voc-text:{text}!important;
-            --voc-muted:{muted}!important;
-            --voc-line:{line}!important;
-            --voc-input:{input_bg}!important;
+            --voc-bg:{c["bg"]}!important;
+            --voc-card:{c["card"]}!important;
+            --voc-card2:{c["card2"]}!important;
+            --voc-text:{c["text"]}!important;
+            --voc-muted:{c["muted"]}!important;
+            --voc-line:{c["line"]}!important;
+            --voc-input:{c["input"]}!important;
+            --voc-hover:{c["hover"]}!important;
             --voc-gold:#B58A3A!important;
-            --voc-gold-soft:{soft}!important;
-            --voc-hover:{hover}!important;
+            --voc-gold-soft:{c["gold_soft"]}!important;
           }}
 
           html, body,
           [data-testid="stAppViewContainer"],
           [data-testid="stAppViewContainer"] > .main,
           .stApp, .main, .block-container {{
-            background:{bg}!important;
-            color:{text}!important;
+            background:{c["bg"]}!important;
+            color:{c["text"]}!important;
           }}
 
           header[data-testid="stHeader"],
-          [data-testid="stToolbar"] {{
-            background:{bg}!important;
-            color:{text}!important;
+          [data-testid="stToolbar"],
+          [data-testid="stDecoration"] {{
+            background:{c["bg"]}!important;
+            color:{c["text"]}!important;
           }}
 
           .voc-shell,
@@ -972,14 +984,14 @@ def apply_app_theme():
           [data-testid="stTable"],
           [data-testid="stExpander"],
           details {{
-            background:{card}!important;
-            color:{text}!important;
-            border-color:{line}!important;
-            box-shadow:0 8px 28px {shadow}!important;
+            background:{c["card"]}!important;
+            color:{c["text"]}!important;
+            border-color:{c["line"]}!important;
+            box-shadow:0 8px 28px {c["shadow"]}!important;
           }}
 
           .st-key-top_navigation {{
-            background:{bg}!important;
+            background:{c["bg"]}!important;
           }}
 
           .stTextInput input,
@@ -987,66 +999,96 @@ def apply_app_theme():
           div[data-baseweb="select"] > div,
           div[data-baseweb="input"] > div,
           [data-baseweb="base-input"] {{
-            background:{input_bg}!important;
-            color:{text}!important;
-            border-color:{line}!important;
+            background:{c["input"]}!important;
+            color:{c["text"]}!important;
+            border-color:{c["line"]}!important;
           }}
 
           .stTextInput input::placeholder,
           .stTextArea textarea::placeholder {{
-            color:{muted}!important;
+            color:{c["muted"]}!important;
+          }}
+
+          /* Select / multiselect text */
+          div[data-baseweb="select"] span,
+          div[data-baseweb="select"] input {{
+            color:{c["text"]}!important;
           }}
 
           .stButton > button,
           .stDownloadButton > button {{
-            background:{card}!important;
-            color:{text}!important;
-            border-color:{line}!important;
+            background:{c["card"]}!important;
+            color:{c["text"]}!important;
+            border-color:{c["line"]}!important;
           }}
 
           .stButton > button:hover,
           .stDownloadButton > button:hover {{
-            background:{hover}!important;
+            background:{c["hover"]}!important;
           }}
 
           h1,h2,h3,h4,h5,h6,p,label,
           [data-testid="stMarkdownContainer"],
           [data-testid="stCaptionContainer"],
           [data-testid="stText"] {{
-            color:{text}!important;
+            color:{c["text"]}!important;
           }}
 
           .voc-version,
           .voc-section-note,
           div[data-testid="stMetric"] label {{
-            color:{muted}!important;
+            color:{c["muted"]}!important;
           }}
 
           [role="listbox"],
           [data-baseweb="popover"],
           [data-baseweb="menu"],
           [data-testid="stPopoverBody"] {{
-            background:{card}!important;
-            color:{text}!important;
+            background:{c["card"]}!important;
+            color:{c["text"]}!important;
           }}
 
           [role="option"] {{
-            color:{text}!important;
-            background:{card}!important;
+            color:{c["text"]}!important;
+            background:{c["card"]}!important;
           }}
 
           [role="option"]:hover {{
-            background:{hover}!important;
+            background:{c["hover"]}!important;
+          }}
+
+          /* Dataframe/table light/dark surface */
+          div[data-testid="stDataFrame"] {{
+            background:{c["card"]}!important;
+          }}
+
+          /* Navigation */
+          .st-key-nav_dashboard button,
+          .st-key-nav_analysis button,
+          .st-key-nav_search button,
+          .st-key-nav_translate button,
+          .st-key-nav_settings button {{
+            background:transparent!important;
+            color:{c["text"]}!important;
+          }}
+
+          .st-key-nav_dashboard button:hover,
+          .st-key-nav_analysis button:hover,
+          .st-key-nav_search button:hover,
+          .st-key-nav_translate button:hover,
+          .st-key-nav_settings button:hover {{
+            background:{c["gold_soft"]}!important;
+            color:#B58A3A!important;
+            border-color:#D9BD83!important;
           }}
 
           hr {{
-            border-color:{line}!important;
+            border-color:{c["line"]}!important;
           }}
         </style>
         """,
         unsafe_allow_html=True,
     )
-
 
 def render_top_header():
     st.markdown("""
@@ -1247,87 +1289,6 @@ def render_top_header():
 
 
 
-
-      /* Native Streamlit theme sync.
-         This intentionally avoids guessing whether dark mode is exposed via
-         data-theme or prefers-color-scheme. Streamlit's own CSS variables
-         already update when the user changes Appearance. */
-      [data-testid="stAppViewContainer"],
-      [data-testid="stAppViewContainer"] > .main,
-      .stApp, .main, .block-container {
-        background:var(--background-color)!important;
-        color:var(--text-color)!important;
-      }
-
-      header[data-testid="stHeader"] {
-        background:var(--background-color)!important;
-      }
-
-      .voc-shell,
-      div[data-testid="stMetric"],
-      div[data-testid="stVerticalBlockBorderWrapper"],
-      .st-key-top_navigation > div,
-      div[data-testid="stDataFrame"],
-      [data-testid="stTable"],
-      [data-testid="stExpander"],
-      details {
-        background:var(--secondary-background-color)!important;
-        color:var(--text-color)!important;
-        border-color:color-mix(in srgb,var(--text-color) 18%,transparent)!important;
-      }
-
-      .st-key-top_navigation {
-        background:color-mix(in srgb,var(--background-color) 94%,transparent)!important;
-      }
-
-      .stTextInput input,
-      .stTextArea textarea,
-      div[data-baseweb="select"] > div,
-      div[data-baseweb="input"] > div,
-      [data-baseweb="base-input"],
-      .stButton > button,
-      .stDownloadButton > button {
-        background:var(--secondary-background-color)!important;
-        color:var(--text-color)!important;
-        border-color:color-mix(in srgb,var(--text-color) 22%,transparent)!important;
-      }
-
-      h1,h2,h3,h4,h5,h6,p,label,span,
-      [data-testid="stMarkdownContainer"],
-      [data-testid="stCaptionContainer"],
-      [data-testid="stText"] {
-        color:var(--text-color);
-      }
-
-      .voc-version,
-      .voc-section-note,
-      div[data-testid="stMetric"] label {
-        color:color-mix(in srgb,var(--text-color) 62%,transparent)!important;
-      }
-
-      .voc-chip {
-        background:color-mix(in srgb,#B58A3A 14%,var(--secondary-background-color))!important;
-        color:color-mix(in srgb,#B58A3A 75%,var(--text-color))!important;
-        border-color:color-mix(in srgb,#B58A3A 34%,transparent)!important;
-      }
-
-      .st-key-nav_dashboard button,
-      .st-key-nav_analysis button,
-      .st-key-nav_search button,
-      .st-key-nav_translate button,
-      .st-key-nav_settings button {
-        color:var(--text-color)!important;
-      }
-
-      .st-key-nav_dashboard button:hover,
-      .st-key-nav_analysis button:hover,
-      .st-key-nav_search button:hover,
-      .st-key-nav_translate button:hover,
-      .st-key-nav_settings button:hover {
-        background:color-mix(in srgb,#B58A3A 14%,var(--secondary-background-color))!important;
-        color:color-mix(in srgb,#B58A3A 78%,var(--text-color))!important;
-        border-color:color-mix(in srgb,#B58A3A 38%,transparent)!important;
-      }
 
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
@@ -2009,11 +1970,11 @@ def main():
             )
     with ctl4:
         st.caption("Theme")
-        theme_icon = "☀️" if st.session_state.get("app_theme") == "dark" else "🌙"
+        theme_icon = "🌙" if st.session_state.get("app_theme") == "dark" else "☀️"
         theme_help = (
-            "라이트 모드로 전환 / Switch to Light"
+            "현재 다크 모드 · 클릭하면 라이트 모드 / Dark · click for Light"
             if st.session_state.get("app_theme") == "dark"
-            else "다크 모드로 전환 / Switch to Dark"
+            else "현재 라이트 모드 · 클릭하면 다크 모드 / Light · click for Dark"
         )
         if st.button(
             theme_icon,
@@ -2091,19 +2052,23 @@ def main():
                     st.session_state.current_page = "settings"
 
     page = st.session_state.current_page
+    _active_bg = "#30291D" if st.session_state.get("app_theme") == "dark" else "#F3E8D1"
+    _active_fg = "#E2B85C" if st.session_state.get("app_theme") == "dark" else "#8A6827"
+    _active_border = "#665431" if st.session_state.get("app_theme") == "dark" else "#D9BD83"
     st.markdown(
         f"""
         <style>
           .st-key-nav_{page} button {{
-            background:color-mix(in srgb,#B58A3A 16%,var(--secondary-background-color))!important;
-            color:color-mix(in srgb,#B58A3A 82%,var(--text-color))!important;
-            border-color:color-mix(in srgb,#B58A3A 45%,transparent)!important;
-            box-shadow:inset 0 -3px 0 #B58A3A;
+            background:{_active_bg}!important;
+            color:{_active_fg}!important;
+            border-color:{_active_border}!important;
+            box-shadow:inset 0 -3px 0 #B58A3A!important;
           }}
         </style>
         """,
         unsafe_allow_html=True
     )
+
     if page == "dashboard":
         dashboard(df)
     elif page == "analysis":
