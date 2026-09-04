@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.8.1 Light Mode Fix Edition"
+APP_VERSION = "V4.8.2 Native Unified Theme Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -910,282 +910,17 @@ def require_login():
 
 
 
-def apply_app_theme():
-    """Apply a deterministic app-level light/dark theme.
-
-    The explicit app theme always wins over OS/browser/Streamlit Appearance
-    so Light stays fully light and Dark stays fully dark.
-    """
-    theme = st.session_state.get("app_theme", "dark")
-
-    if theme == "dark":
-        c = {
-            "bg": "#0B0F14",
-            "card": "#151B22",
-            "card2": "#1B222B",
-            "text": "#F4F6F8",
-            "muted": "#A7B0BB",
-            "line": "#303A45",
-            "input": "#20252D",
-            "hover": "#242B34",
-            "gold_soft": "#30291D",
-            "shadow": "rgba(0,0,0,.32)",
-        }
-    else:
-        c = {
-            "bg": "#F6F7F9",
-            "card": "#FFFFFF",
-            "card2": "#FAFBFC",
-            "text": "#20232A",
-            "muted": "#6B7280",
-            "line": "#E7E9EE",
-            "input": "#FFFFFF",
-            "hover": "#F1F3F5",
-            "gold_soft": "#F7F1E5",
-            "shadow": "rgba(24,28,36,.08)",
-        }
-
-    st.markdown(
-        f"""
-        <style>
-          :root {{
-            --voc-bg:{c["bg"]}!important;
-            --voc-card:{c["card"]}!important;
-            --voc-card2:{c["card2"]}!important;
-            --voc-text:{c["text"]}!important;
-            --voc-muted:{c["muted"]}!important;
-            --voc-line:{c["line"]}!important;
-            --voc-input:{c["input"]}!important;
-            --voc-hover:{c["hover"]}!important;
-            --voc-gold:#B58A3A!important;
-            --voc-gold-soft:{c["gold_soft"]}!important;
-          }}
-
-          html, body,
-          [data-testid="stAppViewContainer"],
-          [data-testid="stAppViewContainer"] > .main,
-          .stApp, .main, .block-container {{
-            background:{c["bg"]}!important;
-            color:{c["text"]}!important;
-          }}
-
-          header[data-testid="stHeader"],
-          [data-testid="stToolbar"],
-          [data-testid="stDecoration"] {{
-            background:{c["bg"]}!important;
-            color:{c["text"]}!important;
-          }}
-
-          .voc-shell,
-          div[data-testid="stMetric"],
-          div[data-testid="stVerticalBlockBorderWrapper"],
-          .st-key-top_navigation > div,
-          div[data-testid="stDataFrame"],
-          [data-testid="stTable"],
-          [data-testid="stExpander"],
-          details {{
-            background:{c["card"]}!important;
-            color:{c["text"]}!important;
-            border-color:{c["line"]}!important;
-            box-shadow:0 8px 28px {c["shadow"]}!important;
-          }}
-
-          .st-key-top_navigation {{
-            background:{c["bg"]}!important;
-          }}
-
-          .stTextInput input,
-          .stTextArea textarea,
-          div[data-baseweb="select"] > div,
-          div[data-baseweb="input"] > div,
-          [data-baseweb="base-input"] {{
-            background:{c["input"]}!important;
-            color:{c["text"]}!important;
-            border-color:{c["line"]}!important;
-          }}
-
-          .stTextInput input::placeholder,
-          .stTextArea textarea::placeholder {{
-            color:{c["muted"]}!important;
-          }}
-
-          /* Select / multiselect text */
-          div[data-baseweb="select"] span,
-          div[data-baseweb="select"] input {{
-            color:{c["text"]}!important;
-          }}
-
-          .stButton > button,
-          .stDownloadButton > button {{
-            background:{c["card"]}!important;
-            color:{c["text"]}!important;
-            border-color:{c["line"]}!important;
-          }}
-
-          .stButton > button:hover,
-          .stDownloadButton > button:hover {{
-            background:{c["hover"]}!important;
-          }}
-
-          h1,h2,h3,h4,h5,h6,p,label,
-          [data-testid="stMarkdownContainer"],
-          [data-testid="stCaptionContainer"],
-          [data-testid="stText"] {{
-            color:{c["text"]}!important;
-          }}
-
-          .voc-version,
-          .voc-section-note,
-          div[data-testid="stMetric"] label {{
-            color:{c["muted"]}!important;
-          }}
-
-          [role="listbox"],
-          [data-baseweb="popover"],
-          [data-baseweb="menu"],
-          [data-testid="stPopoverBody"] {{
-            background:{c["card"]}!important;
-            color:{c["text"]}!important;
-          }}
-
-          [role="option"] {{
-            color:{c["text"]}!important;
-            background:{c["card"]}!important;
-          }}
-
-          [role="option"]:hover {{
-            background:{c["hover"]}!important;
-          }}
-
-          /* Dataframe/table light/dark surface */
-          div[data-testid="stDataFrame"] {{
-            background:{c["card"]}!important;
-          }}
-
-          /* Navigation */
-          .st-key-nav_dashboard button,
-          .st-key-nav_analysis button,
-          .st-key-nav_search button,
-          .st-key-nav_translate button,
-          .st-key-nav_settings button {{
-            background:transparent!important;
-            color:{c["text"]}!important;
-          }}
-
-          .st-key-nav_dashboard button:hover,
-          .st-key-nav_analysis button:hover,
-          .st-key-nav_search button:hover,
-          .st-key-nav_translate button:hover,
-          .st-key-nav_settings button:hover {{
-            background:{c["gold_soft"]}!important;
-            color:#B58A3A!important;
-            border-color:#D9BD83!important;
-          }}
-
-          hr {{
-            border-color:{c["line"]}!important;
-          }}
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Light-only hard reset for Streamlit components that may retain dark
-    # surfaces from the user's Streamlit/OS Appearance setting.
-    if theme == "light":
-        st.markdown(
-            """
-            <style>
-              html, body,
-              [data-testid="stAppViewContainer"],
-              [data-testid="stAppViewContainer"] > .main,
-              .stApp, .main, .block-container {
-                background:#F6F7F9!important;
-                color:#20232A!important;
-              }
-
-              header[data-testid="stHeader"],
-              [data-testid="stToolbar"],
-              [data-testid="stDecoration"] {
-                background:#F6F7F9!important;
-                color:#20232A!important;
-              }
-
-              .voc-shell,
-              .st-key-top_navigation > div,
-              div[data-testid="stMetric"],
-              div[data-testid="stVerticalBlockBorderWrapper"],
-              [data-testid="stExpander"],
-              details {
-                background:#FFFFFF!important;
-                color:#20232A!important;
-                border-color:#E7E9EE!important;
-              }
-
-              .st-key-top_navigation {
-                background:#F6F7F9!important;
-              }
-
-              .st-key-nav_dashboard button,
-              .st-key-nav_analysis button,
-              .st-key-nav_search button,
-              .st-key-nav_translate button,
-              .st-key-nav_settings button {
-                background:transparent!important;
-                color:#20232A!important;
-              }
-
-              .stTextInput input,
-              .stTextArea textarea,
-              div[data-baseweb="select"] > div,
-              div[data-baseweb="input"] > div,
-              [data-baseweb="base-input"],
-              .stButton > button,
-              .stDownloadButton > button {
-                background:#FFFFFF!important;
-                color:#20232A!important;
-                border-color:#D9DDE3!important;
-              }
-
-              div[data-baseweb="select"] span,
-              div[data-baseweb="select"] input,
-              [data-testid="stMarkdownContainer"],
-              [data-testid="stCaptionContainer"],
-              [data-testid="stText"],
-              h1,h2,h3,h4,h5,h6,p,label {
-                color:#20232A!important;
-              }
-
-              [role="listbox"],
-              [data-baseweb="popover"],
-              [data-baseweb="menu"],
-              [data-testid="stPopoverBody"],
-              [role="option"] {
-                background:#FFFFFF!important;
-                color:#20232A!important;
-              }
-
-              div[data-testid="stDataFrame"],
-              [data-testid="stTable"] {
-                background:#FFFFFF!important;
-                color:#20232A!important;
-              }
-            </style>
-            """,
-            unsafe_allow_html=True,
-        )
-
 def render_top_header():
     st.markdown("""
     <style>
       :root {
-        --voc-bg:var(--background-color, #F6F7F9);
-        --voc-card:var(--secondary-background-color, #FFFFFF);
-        --voc-text:var(--text-color, #20232A);
-        --voc-muted:color-mix(in srgb, var(--text-color, #20232A) 62%, transparent);
-        --voc-line:color-mix(in srgb, var(--text-color, #20232A) 18%, transparent);
+        --voc-bg:var(--st-background-color,#F6F7F9);
+        --voc-card:var(--st-secondary-background-color,#FFFFFF);
+        --voc-text:var(--st-text-color,#20232A);
+        --voc-muted:color-mix(in srgb,var(--st-text-color,#20232A) 62%,transparent);
+        --voc-line:var(--st-border-color,color-mix(in srgb,var(--st-text-color,#20232A) 18%,transparent));
         --voc-gold:#B58A3A;
-        --voc-gold-soft:color-mix(in srgb, #B58A3A 14%, var(--secondary-background-color, #FFFFFF));
+        --voc-gold-soft:color-mix(in srgb,#B58A3A 14%,var(--st-secondary-background-color,#FFFFFF));
       }
       html, body,
       [data-testid="stAppViewContainer"],
@@ -1374,6 +1109,103 @@ def render_top_header():
 
 
 
+
+
+      /* Unified native theme sync:
+         System / Light / Dark from Streamlit's ⋮ menu are the single source of truth. */
+      html, body,
+      [data-testid="stAppViewContainer"],
+      [data-testid="stAppViewContainer"] > .main,
+      .stApp, .main, .block-container {
+        background:var(--st-background-color)!important;
+        color:var(--st-text-color)!important;
+      }
+
+      header[data-testid="stHeader"],
+      [data-testid="stToolbar"],
+      [data-testid="stDecoration"] {
+        background:var(--st-background-color)!important;
+        color:var(--st-text-color)!important;
+      }
+
+      .voc-shell,
+      div[data-testid="stMetric"],
+      div[data-testid="stVerticalBlockBorderWrapper"],
+      .st-key-top_navigation > div,
+      div[data-testid="stDataFrame"],
+      [data-testid="stTable"],
+      [data-testid="stExpander"],
+      details {
+        background:var(--st-secondary-background-color)!important;
+        color:var(--st-text-color)!important;
+        border-color:var(--st-border-color)!important;
+      }
+
+      .st-key-top_navigation {
+        background:color-mix(in srgb,var(--st-background-color) 94%,transparent)!important;
+      }
+
+      .stTextInput input,
+      .stTextArea textarea,
+      div[data-baseweb="select"] > div,
+      div[data-baseweb="input"] > div,
+      [data-baseweb="base-input"],
+      .stButton > button,
+      .stDownloadButton > button {
+        background:var(--st-secondary-background-color)!important;
+        color:var(--st-text-color)!important;
+        border-color:var(--st-border-color)!important;
+      }
+
+      .stTextInput input::placeholder,
+      .stTextArea textarea::placeholder {
+        color:color-mix(in srgb,var(--st-text-color) 58%,transparent)!important;
+      }
+
+      h1,h2,h3,h4,h5,h6,p,label,
+      [data-testid="stMarkdownContainer"],
+      [data-testid="stCaptionContainer"],
+      [data-testid="stText"] {
+        color:var(--st-text-color)!important;
+      }
+
+      .voc-version,
+      .voc-section-note,
+      div[data-testid="stMetric"] label {
+        color:color-mix(in srgb,var(--st-text-color) 62%,transparent)!important;
+      }
+
+      [role="listbox"],
+      [data-baseweb="popover"],
+      [data-baseweb="menu"],
+      [data-testid="stPopoverBody"],
+      [role="option"] {
+        background:var(--st-secondary-background-color)!important;
+        color:var(--st-text-color)!important;
+      }
+
+      [role="option"]:hover {
+        background:color-mix(in srgb,var(--st-secondary-background-color) 88%,var(--st-text-color) 12%)!important;
+      }
+
+      .st-key-nav_dashboard button,
+      .st-key-nav_analysis button,
+      .st-key-nav_search button,
+      .st-key-nav_translate button,
+      .st-key-nav_settings button {
+        background:transparent!important;
+        color:var(--st-text-color)!important;
+      }
+
+      .st-key-nav_dashboard button:hover,
+      .st-key-nav_analysis button:hover,
+      .st-key-nav_search button:hover,
+      .st-key-nav_translate button:hover,
+      .st-key-nav_settings button:hover {
+        background:color-mix(in srgb,#B58A3A 14%,var(--st-secondary-background-color))!important;
+        color:color-mix(in srgb,#B58A3A 72%,var(--st-text-color))!important;
+        border-color:color-mix(in srgb,#B58A3A 42%,transparent)!important;
+      }
 
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
@@ -1974,29 +1806,25 @@ def settings_page(user):
 def main():
     if "lang" not in st.session_state:
         st.session_state.lang = "ko"
-    if "app_theme" not in st.session_state:
-        st.session_state.app_theme = "dark"
-
-    apply_app_theme()
-
     loading = st.empty()
-    _load_dark = st.session_state.get("app_theme", "dark") == "dark"
-    _load_bg = "#0B0F14" if _load_dark else "#F6F7F9"
-    _load_text = "#F4F6F8" if _load_dark else "#20232A"
-    _load_ring = "#39424D" if _load_dark else "#E4E6EA"
     loading.markdown(
-        f"""
-        <div style="position:fixed;inset:0;z-index:999999;background:{_load_bg};display:flex;
-                    align-items:center;justify-content:center;flex-direction:column;color:{_load_text};">
+        """
+        <div style="position:fixed;inset:0;z-index:999999;
+                    background:var(--st-background-color,#F6F7F9);
+                    color:var(--st-text-color,#20232A);
+                    display:flex;align-items:center;justify-content:center;flex-direction:column;">
           <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;
                       letter-spacing:.12em;color:#B89046;margin-bottom:14px;">VOC INTELLIGENCE</div>
-          <div style="width:42px;height:42px;border:4px solid {_load_ring};border-top-color:#B89046;
-                      border-radius:50%;animation:vocspin 0.9s linear infinite;"></div>
-          <div style="margin-top:16px;font-size:15px;color:{_load_text};opacity:.72;">
+          <div style="width:42px;height:42px;
+                      border:4px solid color-mix(in srgb,var(--st-text-color,#20232A) 18%,transparent);
+                      border-top-color:#B89046;border-radius:50%;
+                      animation:vocspin 0.9s linear infinite;"></div>
+          <div style="margin-top:16px;font-size:15px;
+                      color:var(--st-text-color,#20232A);opacity:.72;">
             로딩 중입니다 · Loading · 加载中...
           </div>
         </div>
-        <style>@keyframes vocspin {{to {{transform:rotate(360deg);}}}}</style>
+        <style>@keyframes vocspin {to {transform:rotate(360deg);}}</style>
         """,
         unsafe_allow_html=True,
     )
@@ -2004,10 +1832,9 @@ def main():
     loading.empty()
     user = require_login()
     render_top_header()
-    apply_app_theme()
 
     # Top control row
-    ctl1, ctl2, ctl3, ctl4, ctl5 = st.columns([1.2, 1.2, 1.7, .62, 1.05])
+    ctl1, ctl2, ctl3, ctl4 = st.columns([1.25, 1.25, 1.8, 1.1])
     with ctl1:
         lang_name = st.selectbox(
             "언어 / Language / 语言",
@@ -2054,32 +1881,10 @@ def main():
                 placeholder=f"{key_label} API Key · 현재 브라우저 세션에서만 사용"
             )
     with ctl4:
-        _is_dark = st.session_state.get("app_theme") == "dark"
-        st.caption("Theme · " + ("Dark" if _is_dark else "Light"))
-        theme_label = "☀️ Light" if _is_dark else "🌙 Dark"
-        theme_help = (
-            "라이트 모드로 전환 / Switch to Light"
-            if _is_dark
-            else "다크 모드로 전환 / Switch to Dark"
-        )
-        if st.button(
-            theme_label,
-            key="app_theme_toggle",
-            help=theme_help,
-            use_container_width=True,
-        ):
-            st.session_state.app_theme = (
-                "light" if st.session_state.get("app_theme") == "dark" else "dark"
-            )
-            st.rerun()
-
-    with ctl5:
         st.caption(f"{user['display_name']} · {user['role']}")
         if st.button("로그아웃 / Logout / 退出", use_container_width=True):
             st.session_state.user = None
             st.rerun()
-
-    df = load_cases()
 
     if "current_page" not in st.session_state:
         st.session_state.current_page = "dashboard"
@@ -2138,16 +1943,13 @@ def main():
                     st.session_state.current_page = "settings"
 
     page = st.session_state.current_page
-    _active_bg = "#30291D" if st.session_state.get("app_theme") == "dark" else "#F3E8D1"
-    _active_fg = "#E2B85C" if st.session_state.get("app_theme") == "dark" else "#8A6827"
-    _active_border = "#665431" if st.session_state.get("app_theme") == "dark" else "#D9BD83"
     st.markdown(
         f"""
         <style>
           .st-key-nav_{page} button {{
-            background:{_active_bg}!important;
-            color:{_active_fg}!important;
-            border-color:{_active_border}!important;
+            background:color-mix(in srgb,#B58A3A 16%,var(--st-secondary-background-color))!important;
+            color:color-mix(in srgb,#B58A3A 72%,var(--st-text-color))!important;
+            border-color:color-mix(in srgb,#B58A3A 45%,transparent)!important;
             box-shadow:inset 0 -3px 0 #B58A3A!important;
           }}
         </style>
