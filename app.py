@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.4 Sticky Navigation Edition"
+APP_VERSION = "V4.7.5 Emoji Navigation Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1040,7 +1040,7 @@ def render_top_header():
         border:1px solid transparent!important;
         border-radius:12px!important;
         background:transparent!important;
-        font-size:1.55rem!important;
+        font-size:1.70rem!important;
         font-weight:700!important;
         transition:background .18s ease, color .18s ease,
                    border-color .18s ease, transform .18s ease!important;
@@ -1100,7 +1100,7 @@ def render_top_header():
         .st-key-nav_settings button {
           height:52px;
           min-height:52px;
-          font-size:1.35rem!important;
+          font-size:1.48rem!important;
         }
         .voc-brand-title { font-size:1.05rem; }
         .voc-chip { display:none; }
@@ -1772,7 +1772,7 @@ def main():
         with n1:
             with st.container(key="nav_dashboard"):
                 if st.button(
-                    "⌂",
+                    "📊",
                     key="nav_btn_dashboard",
                     help="Dashboard · 대시보드 · 仪表盘",
                     use_container_width=True
@@ -1782,7 +1782,7 @@ def main():
         with n2:
             with st.container(key="nav_analysis"):
                 if st.button(
-                    "✦",
+                    "🤖",
                     key="nav_btn_analysis",
                     help="AI VOC Analysis · 심층분석 · AI深度分析",
                     use_container_width=True
@@ -1792,7 +1792,7 @@ def main():
         with n3:
             with st.container(key="nav_search"):
                 if st.button(
-                    "⌕",
+                    "🔍",
                     key="nav_btn_search",
                     help="Search & Edit · VOC 검색/수정 · 查询修改",
                     use_container_width=True
@@ -1802,7 +1802,7 @@ def main():
         with n4:
             with st.container(key="nav_translate"):
                 if st.button(
-                    "文",
+                    "💬",
                     key="nav_btn_translate",
                     help="Translate · 한중영 변환 · 韩中英转换",
                     use_container_width=True
@@ -1812,7 +1812,7 @@ def main():
         with n5:
             with st.container(key="nav_settings"):
                 if st.button(
-                    "⚙",
+                    "⚙️",
                     key="nav_btn_settings",
                     help="Settings · 설정 · 设置",
                     use_container_width=True
