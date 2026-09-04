@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.7 True Dark Canvas Edition"
+APP_VERSION = "V4.7.8 Native Theme Sync Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -913,18 +913,24 @@ def render_top_header():
     st.markdown("""
     <style>
       :root {
-        --voc-bg:#F6F7F9;
-        --voc-card:#FFFFFF;
-        --voc-text:#20232A;
-        --voc-muted:#6B7280;
-        --voc-line:#E7E9EE;
+        --voc-bg:var(--background-color, #F6F7F9);
+        --voc-card:var(--secondary-background-color, #FFFFFF);
+        --voc-text:var(--text-color, #20232A);
+        --voc-muted:color-mix(in srgb, var(--text-color, #20232A) 62%, transparent);
+        --voc-line:color-mix(in srgb, var(--text-color, #20232A) 18%, transparent);
         --voc-gold:#B58A3A;
-        --voc-gold-soft:#F7F1E5;
+        --voc-gold-soft:color-mix(in srgb, #B58A3A 14%, var(--secondary-background-color, #FFFFFF));
       }
-      .stApp { background:var(--voc-bg); color:var(--voc-text); }
+      html, body,
+      [data-testid="stAppViewContainer"],
+      [data-testid="stAppViewContainer"] > .main,
+      .stApp, .main, .block-container {
+        background:var(--voc-bg)!important;
+        color:var(--voc-text)!important;
+      }
       .block-container { padding-top:.75rem; padding-bottom:2.5rem; max-width:1440px; }
       [data-testid="stSidebar"], section[data-testid="stSidebar"] { display:none; }
-      header[data-testid="stHeader"] { background:transparent; }
+      header[data-testid="stHeader"] { background:var(--voc-bg)!important; }
 
       .voc-shell {
         background:var(--voc-card);
@@ -965,7 +971,7 @@ def render_top_header():
         border:1px solid var(--voc-line);
         padding:16px;
         border-radius:16px;
-        background:#fff;
+        background:var(--voc-card);
         box-shadow:0 3px 14px rgba(24,28,36,.035);
       }
       div[data-testid="stMetric"] label { color:var(--voc-muted)!important; }
@@ -982,7 +988,7 @@ def render_top_header():
       div[data-baseweb="tab-list"] {
         gap:.55rem;
         border:0!important;
-        background:#fff;
+        background:var(--voc-card);
         padding:7px;
         border-radius:15px;
         box-shadow:0 3px 14px rgba(24,28,36,.04);
@@ -999,7 +1005,7 @@ def render_top_header():
         background:var(--voc-gold-soft)!important;
         color:#8A6827!important;
       }
-      button[data-baseweb="tab"]:hover { background:#F4F5F7!important; }
+      button[data-baseweb="tab"]:hover { background:color-mix(in srgb, var(--voc-card) 88%, var(--voc-text) 12%)!important; }
 
       div[data-testid="stVerticalBlockBorderWrapper"] {
         border-color:var(--voc-line)!important;
@@ -1014,7 +1020,7 @@ def render_top_header():
         position:sticky!important;
         top:.55rem!important;
         z-index:9999!important;
-        background:rgba(246,247,249,.96)!important;
+        background:color-mix(in srgb, var(--voc-bg) 94%, transparent)!important;
         backdrop-filter:blur(10px);
         -webkit-backdrop-filter:blur(10px);
         padding:.38rem 0 .45rem 0!important;
@@ -1022,7 +1028,7 @@ def render_top_header():
       }
 
       .st-key-top_navigation > div {
-        background:#FFFFFF;
+        background:var(--voc-card);
         border:1px solid var(--voc-line);
         border-radius:17px;
         padding:8px 10px;
@@ -1060,7 +1066,7 @@ def render_top_header():
       .st-key-nav_search button:hover,
       .st-key-nav_translate button:hover,
       .st-key-nav_settings button:hover {
-        background:#F7F1E5!important;
+        background:var(--voc-gold-soft)!important;
         color:#8A6827!important;
         border-color:#E8D6AE!important;
         transform:translateY(-1px);
@@ -1102,289 +1108,86 @@ def render_top_header():
 
 
 
-      /* Full-page dark mode:
-         supports both browser dark mode and Streamlit's own dark theme. */
 
-      @media (prefers-color-scheme: dark) {
-        html, body,
-        [data-testid="stAppViewContainer"],
-        [data-testid="stAppViewContainer"] > .main,
-        .stApp, .main, .block-container {
-          background:#0B0F14!important;
-          color:#F4F6F8!important;
-        }
-        header[data-testid="stHeader"] { background:#0B0F14!important; }
+      /* Native Streamlit theme sync.
+         This intentionally avoids guessing whether dark mode is exposed via
+         data-theme or prefers-color-scheme. Streamlit's own CSS variables
+         already update when the user changes Appearance. */
+      [data-testid="stAppViewContainer"],
+      [data-testid="stAppViewContainer"] > .main,
+      .stApp, .main, .block-container {
+        background:var(--background-color)!important;
+        color:var(--text-color)!important;
       }
 
-      html[data-theme="dark"],
-      body[data-theme="dark"],
-      [data-theme="dark"] {
-        --voc-bg:#0B0F14!important;
-        --voc-card:#141A21!important;
-        --voc-text:#F4F6F8!important;
-        --voc-muted:#A8B0BA!important;
-        --voc-line:#2C3540!important;
-        --voc-gold:#D8AD54!important;
-        --voc-gold-soft:#2E271B!important;
+      header[data-testid="stHeader"] {
+        background:var(--background-color)!important;
       }
 
-      html[data-theme="dark"] body,
-      body[data-theme="dark"],
-      html[data-theme="dark"] [data-testid="stAppViewContainer"],
-      body[data-theme="dark"] [data-testid="stAppViewContainer"],
-      [data-theme="dark"] [data-testid="stAppViewContainer"],
-      html[data-theme="dark"] .stApp,
-      body[data-theme="dark"] .stApp,
-      [data-theme="dark"] .stApp,
-      html[data-theme="dark"] .main,
-      body[data-theme="dark"] .main,
-      [data-theme="dark"] .main,
-      html[data-theme="dark"] .block-container,
-      body[data-theme="dark"] .block-container,
-      [data-theme="dark"] .block-container {
-        background:#0B0F14!important;
-        color:#F4F6F8!important;
+      .voc-shell,
+      div[data-testid="stMetric"],
+      div[data-testid="stVerticalBlockBorderWrapper"],
+      .st-key-top_navigation > div,
+      div[data-testid="stDataFrame"],
+      [data-testid="stTable"],
+      [data-testid="stExpander"],
+      details {
+        background:var(--secondary-background-color)!important;
+        color:var(--text-color)!important;
+        border-color:color-mix(in srgb,var(--text-color) 18%,transparent)!important;
       }
 
-      html[data-theme="dark"] header[data-testid="stHeader"],
-      body[data-theme="dark"] header[data-testid="stHeader"],
-      [data-theme="dark"] header[data-testid="stHeader"] {
-        background:#0B0F14!important;
+      .st-key-top_navigation {
+        background:color-mix(in srgb,var(--background-color) 94%,transparent)!important;
       }
 
-      @media (prefers-color-scheme: dark) {
-        .voc-shell,
-        div[data-testid="stMetric"],
-        div[data-testid="stVerticalBlockBorderWrapper"],
-        div[data-baseweb="tab-list"],
-        .st-key-top_navigation > div {
-          background:#141A21!important;
-          border-color:#2C3540!important;
-          color:#F4F6F8!important;
-          box-shadow:0 8px 28px rgba(0,0,0,.30)!important;
-        }
-        .st-key-top_navigation {
-          background:rgba(11,15,20,.96)!important;
-        }
+      .stTextInput input,
+      .stTextArea textarea,
+      div[data-baseweb="select"] > div,
+      div[data-baseweb="input"] > div,
+      [data-baseweb="base-input"],
+      .stButton > button,
+      .stDownloadButton > button {
+        background:var(--secondary-background-color)!important;
+        color:var(--text-color)!important;
+        border-color:color-mix(in srgb,var(--text-color) 22%,transparent)!important;
       }
 
-      html[data-theme="dark"] .voc-shell,
-      body[data-theme="dark"] .voc-shell,
-      [data-theme="dark"] .voc-shell,
-      html[data-theme="dark"] div[data-testid="stMetric"],
-      body[data-theme="dark"] div[data-testid="stMetric"],
-      [data-theme="dark"] div[data-testid="stMetric"],
-      html[data-theme="dark"] div[data-testid="stVerticalBlockBorderWrapper"],
-      body[data-theme="dark"] div[data-testid="stVerticalBlockBorderWrapper"],
-      [data-theme="dark"] div[data-testid="stVerticalBlockBorderWrapper"],
-      html[data-theme="dark"] .st-key-top_navigation > div,
-      body[data-theme="dark"] .st-key-top_navigation > div,
-      [data-theme="dark"] .st-key-top_navigation > div {
-        background:#141A21!important;
-        border-color:#2C3540!important;
-        color:#F4F6F8!important;
-        box-shadow:0 8px 28px rgba(0,0,0,.30)!important;
+      h1,h2,h3,h4,h5,h6,p,label,span,
+      [data-testid="stMarkdownContainer"],
+      [data-testid="stCaptionContainer"],
+      [data-testid="stText"] {
+        color:var(--text-color);
       }
 
-      html[data-theme="dark"] .st-key-top_navigation,
-      body[data-theme="dark"] .st-key-top_navigation,
-      [data-theme="dark"] .st-key-top_navigation {
-        background:rgba(11,15,20,.96)!important;
+      .voc-version,
+      .voc-section-note,
+      div[data-testid="stMetric"] label {
+        color:color-mix(in srgb,var(--text-color) 62%,transparent)!important;
       }
 
-      @media (prefers-color-scheme: dark) {
-        .voc-brand-title { color:#E2B85C!important; }
-        .voc-version, .voc-section-note,
-        div[data-testid="stMetric"] label { color:#A8B0BA!important; }
-
-        .voc-chip {
-          background:#2E271B!important;
-          color:#E5C77D!important;
-          border-color:#5A4A2D!important;
-        }
-
-        h1,h2,h3,h4,h5,h6,p,label,span,
-        [data-testid="stMarkdownContainer"],
-        [data-testid="stCaptionContainer"],
-        [data-testid="stText"] {
-          color:#F4F6F8!important;
-        }
-
-        .stTextInput input,
-        .stTextArea textarea,
-        div[data-baseweb="select"] > div,
-        div[data-baseweb="input"] > div,
-        [data-baseweb="base-input"] {
-          background:#171D24!important;
-          color:#F4F6F8!important;
-          border-color:#36414D!important;
-        }
-
-        .stButton > button,
-        .stDownloadButton > button {
-          background:#171D24!important;
-          color:#F4F6F8!important;
-          border-color:#36414D!important;
-        }
-
-        div[data-testid="stDataFrame"],
-        [data-testid="stTable"],
-        [data-testid="stExpander"],
-        details {
-          background:#141A21!important;
-          color:#F4F6F8!important;
-          border-color:#2C3540!important;
-        }
+      .voc-chip {
+        background:color-mix(in srgb,#B58A3A 14%,var(--secondary-background-color))!important;
+        color:color-mix(in srgb,#B58A3A 75%,var(--text-color))!important;
+        border-color:color-mix(in srgb,#B58A3A 34%,transparent)!important;
       }
 
-      html[data-theme="dark"] .voc-brand-title,
-      body[data-theme="dark"] .voc-brand-title,
-      [data-theme="dark"] .voc-brand-title {
-        color:#E2B85C!important;
+      .st-key-nav_dashboard button,
+      .st-key-nav_analysis button,
+      .st-key-nav_search button,
+      .st-key-nav_translate button,
+      .st-key-nav_settings button {
+        color:var(--text-color)!important;
       }
 
-      html[data-theme="dark"] .voc-version,
-      body[data-theme="dark"] .voc-version,
-      [data-theme="dark"] .voc-version,
-      html[data-theme="dark"] .voc-section-note,
-      body[data-theme="dark"] .voc-section-note,
-      [data-theme="dark"] .voc-section-note,
-      html[data-theme="dark"] div[data-testid="stMetric"] label,
-      body[data-theme="dark"] div[data-testid="stMetric"] label,
-      [data-theme="dark"] div[data-testid="stMetric"] label {
-        color:#A8B0BA!important;
-      }
-
-      html[data-theme="dark"] .voc-chip,
-      body[data-theme="dark"] .voc-chip,
-      [data-theme="dark"] .voc-chip {
-        background:#2E271B!important;
-        color:#E5C77D!important;
-        border-color:#5A4A2D!important;
-      }
-
-      html[data-theme="dark"] h1,
-      html[data-theme="dark"] h2,
-      html[data-theme="dark"] h3,
-      html[data-theme="dark"] h4,
-      html[data-theme="dark"] h5,
-      html[data-theme="dark"] h6,
-      html[data-theme="dark"] p,
-      html[data-theme="dark"] label,
-      body[data-theme="dark"] h1,
-      body[data-theme="dark"] h2,
-      body[data-theme="dark"] h3,
-      body[data-theme="dark"] p,
-      [data-theme="dark"] [data-testid="stMarkdownContainer"],
-      [data-theme="dark"] [data-testid="stCaptionContainer"],
-      [data-theme="dark"] [data-testid="stText"] {
-        color:#F4F6F8!important;
-      }
-
-      html[data-theme="dark"] .stTextInput input,
-      body[data-theme="dark"] .stTextInput input,
-      [data-theme="dark"] .stTextInput input,
-      html[data-theme="dark"] .stTextArea textarea,
-      body[data-theme="dark"] .stTextArea textarea,
-      [data-theme="dark"] .stTextArea textarea,
-      html[data-theme="dark"] div[data-baseweb="select"] > div,
-      body[data-theme="dark"] div[data-baseweb="select"] > div,
-      [data-theme="dark"] div[data-baseweb="select"] > div,
-      html[data-theme="dark"] [data-baseweb="base-input"],
-      body[data-theme="dark"] [data-baseweb="base-input"],
-      [data-theme="dark"] [data-baseweb="base-input"] {
-        background:#171D24!important;
-        color:#F4F6F8!important;
-        border-color:#36414D!important;
-      }
-
-      html[data-theme="dark"] .stButton > button,
-      body[data-theme="dark"] .stButton > button,
-      [data-theme="dark"] .stButton > button,
-      html[data-theme="dark"] .stDownloadButton > button,
-      body[data-theme="dark"] .stDownloadButton > button,
-      [data-theme="dark"] .stDownloadButton > button {
-        background:#171D24!important;
-        color:#F4F6F8!important;
-        border-color:#36414D!important;
-      }
-
-      html[data-theme="dark"] div[data-testid="stDataFrame"],
-      body[data-theme="dark"] div[data-testid="stDataFrame"],
-      [data-theme="dark"] div[data-testid="stDataFrame"],
-      html[data-theme="dark"] [data-testid="stTable"],
-      body[data-theme="dark"] [data-testid="stTable"],
-      [data-theme="dark"] [data-testid="stTable"],
-      html[data-theme="dark"] [data-testid="stExpander"],
-      body[data-theme="dark"] [data-testid="stExpander"],
-      [data-theme="dark"] [data-testid="stExpander"],
-      html[data-theme="dark"] details,
-      body[data-theme="dark"] details,
-      [data-theme="dark"] details {
-        background:#141A21!important;
-        color:#F4F6F8!important;
-        border-color:#2C3540!important;
-      }
-
-      /* Dark theme navigation */
-      @media (prefers-color-scheme: dark) {
-        .st-key-nav_dashboard button,
-        .st-key-nav_analysis button,
-        .st-key-nav_search button,
-        .st-key-nav_translate button,
-        .st-key-nav_settings button {
-          background:transparent!important;
-          color:#F4F6F8!important;
-        }
-
-        .st-key-nav_dashboard button:hover,
-        .st-key-nav_analysis button:hover,
-        .st-key-nav_search button:hover,
-        .st-key-nav_translate button:hover,
-        .st-key-nav_settings button:hover {
-          background:#2E271B!important;
-          color:#E2B85C!important;
-          border-color:#665431!important;
-        }
-      }
-
-      html[data-theme="dark"] .st-key-nav_dashboard button,
-      html[data-theme="dark"] .st-key-nav_analysis button,
-      html[data-theme="dark"] .st-key-nav_search button,
-      html[data-theme="dark"] .st-key-nav_translate button,
-      html[data-theme="dark"] .st-key-nav_settings button,
-      body[data-theme="dark"] .st-key-nav_dashboard button,
-      body[data-theme="dark"] .st-key-nav_analysis button,
-      body[data-theme="dark"] .st-key-nav_search button,
-      body[data-theme="dark"] .st-key-nav_translate button,
-      body[data-theme="dark"] .st-key-nav_settings button,
-      [data-theme="dark"] .st-key-nav_dashboard button,
-      [data-theme="dark"] .st-key-nav_analysis button,
-      [data-theme="dark"] .st-key-nav_search button,
-      [data-theme="dark"] .st-key-nav_translate button,
-      [data-theme="dark"] .st-key-nav_settings button {
-        background:transparent!important;
-        color:#F4F6F8!important;
-      }
-
-      html[data-theme="dark"] .st-key-nav_dashboard button:hover,
-      html[data-theme="dark"] .st-key-nav_analysis button:hover,
-      html[data-theme="dark"] .st-key-nav_search button:hover,
-      html[data-theme="dark"] .st-key-nav_translate button:hover,
-      html[data-theme="dark"] .st-key-nav_settings button:hover,
-      body[data-theme="dark"] .st-key-nav_dashboard button:hover,
-      body[data-theme="dark"] .st-key-nav_analysis button:hover,
-      body[data-theme="dark"] .st-key-nav_search button:hover,
-      body[data-theme="dark"] .st-key-nav_translate button:hover,
-      body[data-theme="dark"] .st-key-nav_settings button:hover,
-      [data-theme="dark"] .st-key-nav_dashboard button:hover,
-      [data-theme="dark"] .st-key-nav_analysis button:hover,
-      [data-theme="dark"] .st-key-nav_search button:hover,
-      [data-theme="dark"] .st-key-nav_translate button:hover,
-      [data-theme="dark"] .st-key-nav_settings button:hover {
-        background:#2E271B!important;
-        color:#E2B85C!important;
-        border-color:#665431!important;
+      .st-key-nav_dashboard button:hover,
+      .st-key-nav_analysis button:hover,
+      .st-key-nav_search button:hover,
+      .st-key-nav_translate button:hover,
+      .st-key-nav_settings button:hover {
+        background:color-mix(in srgb,#B58A3A 14%,var(--secondary-background-color))!important;
+        color:color-mix(in srgb,#B58A3A 78%,var(--text-color))!important;
+        border-color:color-mix(in srgb,#B58A3A 38%,transparent)!important;
       }
 
       @media (max-width:800px) {
@@ -1989,13 +1792,13 @@ def main():
 
     loading = st.empty()
     loading.markdown("""
-    <div style="position:fixed;inset:0;z-index:999999;background:#ffffff;display:flex;
-                align-items:center;justify-content:center;flex-direction:column;">
+    <div style="position:fixed;inset:0;z-index:999999;background:var(--background-color,#ffffff);display:flex;
+                align-items:center;justify-content:center;flex-direction:column;color:var(--text-color,#20232A);">
       <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;
                   letter-spacing:.12em;color:#B89046;margin-bottom:14px;">VOC INTELLIGENCE</div>
-      <div style="width:42px;height:42px;border:4px solid #eee;border-top-color:#B89046;
+      <div style="width:42px;height:42px;border:4px solid color-mix(in srgb,var(--text-color,#20232A) 20%,transparent);border-top-color:#B89046;
                   border-radius:50%;animation:vocspin 0.9s linear infinite;"></div>
-      <div style="margin-top:16px;font-size:15px;color:#666;">로딩 중입니다 · Loading · 加载中...</div>
+      <div style="margin-top:16px;font-size:15px;color:var(--text-color,#20232A);opacity:.72;">로딩 중입니다 · Loading · 加载中...</div>
     </div>
     <style>@keyframes vocspin {to {transform:rotate(360deg);}}</style>
     """, unsafe_allow_html=True)
@@ -2120,26 +1923,10 @@ def main():
         f"""
         <style>
           .st-key-nav_{page} button {{
-            background:#F3E8D1!important;
-            color:#8A6827!important;
-            border-color:#D9BD83!important;
+            background:color-mix(in srgb,#B58A3A 16%,var(--secondary-background-color))!important;
+            color:color-mix(in srgb,#B58A3A 82%,var(--text-color))!important;
+            border-color:color-mix(in srgb,#B58A3A 45%,transparent)!important;
             box-shadow:inset 0 -3px 0 #B58A3A;
-          }}
-          @media (prefers-color-scheme: dark) {{
-            .st-key-nav_{page} button {{
-              background:#30291D!important;
-              color:#E2B85C!important;
-              border-color:#665431!important;
-              box-shadow:inset 0 -3px 0 #D3A94F;
-            }}
-          }}
-          html[data-theme="dark"] .st-key-nav_{page} button,
-          body[data-theme="dark"] .st-key-nav_{page} button,
-          [data-theme="dark"] .st-key-nav_{page} button {{
-            background:#30291D!important;
-            color:#E2B85C!important;
-            border-color:#665431!important;
-            box-shadow:inset 0 -3px 0 #D3A94F;
           }}
         </style>
         """,
