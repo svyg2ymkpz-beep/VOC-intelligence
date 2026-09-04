@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.8.2 Native Unified Theme Edition"
+APP_VERSION = "V4.8.3 Stable Light Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1207,6 +1207,105 @@ def render_top_header():
         border-color:color-mix(in srgb,#B58A3A 42%,transparent)!important;
       }
 
+
+      /* V4.8.3 Stable Light Edition
+         Dark mode is intentionally disabled to keep the UI consistent. */
+      html, body,
+      [data-testid="stAppViewContainer"],
+      [data-testid="stAppViewContainer"] > .main,
+      .stApp, .main, .block-container {
+        background:#F6F7F9!important;
+        color:#20232A!important;
+      }
+
+      header[data-testid="stHeader"],
+      [data-testid="stToolbar"],
+      [data-testid="stDecoration"] {
+        background:#F6F7F9!important;
+        color:#20232A!important;
+      }
+
+      .voc-shell,
+      div[data-testid="stMetric"],
+      div[data-testid="stVerticalBlockBorderWrapper"],
+      .st-key-top_navigation > div,
+      div[data-testid="stDataFrame"],
+      [data-testid="stTable"],
+      [data-testid="stExpander"],
+      details {
+        background:#FFFFFF!important;
+        color:#20232A!important;
+        border-color:#E7E9EE!important;
+      }
+
+      .st-key-top_navigation {
+        background:#F6F7F9!important;
+      }
+
+      .stTextInput input,
+      .stTextArea textarea,
+      div[data-baseweb="select"] > div,
+      div[data-baseweb="input"] > div,
+      [data-baseweb="base-input"],
+      .stButton > button,
+      .stDownloadButton > button {
+        background:#FFFFFF!important;
+        color:#20232A!important;
+        border-color:#D9DDE3!important;
+      }
+
+      .stTextInput input::placeholder,
+      .stTextArea textarea::placeholder {
+        color:#7C8490!important;
+      }
+
+      div[data-baseweb="select"] span,
+      div[data-baseweb="select"] input,
+      h1,h2,h3,h4,h5,h6,p,label,
+      [data-testid="stMarkdownContainer"],
+      [data-testid="stCaptionContainer"],
+      [data-testid="stText"] {
+        color:#20232A!important;
+      }
+
+      [role="listbox"],
+      [data-baseweb="popover"],
+      [data-baseweb="menu"],
+      [data-testid="stPopoverBody"],
+      [role="option"] {
+        background:#FFFFFF!important;
+        color:#20232A!important;
+      }
+
+      [role="option"]:hover {
+        background:#F1F3F5!important;
+      }
+
+      .st-key-nav_dashboard button,
+      .st-key-nav_analysis button,
+      .st-key-nav_search button,
+      .st-key-nav_translate button,
+      .st-key-nav_settings button {
+        background:transparent!important;
+        color:#20232A!important;
+      }
+
+      .st-key-nav_dashboard button:hover,
+      .st-key-nav_analysis button:hover,
+      .st-key-nav_search button:hover,
+      .st-key-nav_translate button:hover,
+      .st-key-nav_settings button:hover {
+        background:#F7F1E5!important;
+        color:#8A6827!important;
+        border-color:#D9BD83!important;
+      }
+
+      /* Hide Streamlit's Appearance/System-Light-Dark menu to avoid a
+         second theme controller conflicting with the app. */
+      #MainMenu {
+        visibility:hidden!important;
+      }
+
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
         .st-key-nav_dashboard button,
@@ -1809,18 +1908,13 @@ def main():
     loading = st.empty()
     loading.markdown(
         """
-        <div style="position:fixed;inset:0;z-index:999999;
-                    background:var(--st-background-color,#F6F7F9);
-                    color:var(--st-text-color,#20232A);
+        <div style="position:fixed;inset:0;z-index:999999;background:#F6F7F9;color:#20232A;
                     display:flex;align-items:center;justify-content:center;flex-direction:column;">
           <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;
                       letter-spacing:.12em;color:#B89046;margin-bottom:14px;">VOC INTELLIGENCE</div>
-          <div style="width:42px;height:42px;
-                      border:4px solid color-mix(in srgb,var(--st-text-color,#20232A) 18%,transparent);
-                      border-top-color:#B89046;border-radius:50%;
-                      animation:vocspin 0.9s linear infinite;"></div>
-          <div style="margin-top:16px;font-size:15px;
-                      color:var(--st-text-color,#20232A);opacity:.72;">
+          <div style="width:42px;height:42px;border:4px solid #E1E4E8;border-top-color:#B89046;
+                      border-radius:50%;animation:vocspin 0.9s linear infinite;"></div>
+          <div style="margin-top:16px;font-size:15px;color:#6B7280;">
             로딩 중입니다 · Loading · 加载中...
           </div>
         </div>
@@ -1947,9 +2041,9 @@ def main():
         f"""
         <style>
           .st-key-nav_{page} button {{
-            background:color-mix(in srgb,#B58A3A 16%,var(--st-secondary-background-color))!important;
-            color:color-mix(in srgb,#B58A3A 72%,var(--st-text-color))!important;
-            border-color:color-mix(in srgb,#B58A3A 45%,transparent)!important;
+            background:#F3E8D1!important;
+            color:#8A6827!important;
+            border-color:#D9BD83!important;
             box-shadow:inset 0 -3px 0 #B58A3A!important;
           }}
         </style>
