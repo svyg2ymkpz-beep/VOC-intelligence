@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.8 Native Theme Sync Edition"
+APP_VERSION = "V4.7.9 App Theme Toggle Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -907,6 +907,145 @@ def require_login():
                 st.error("로그인 정보가 올바르지 않습니다. / 登录信息不正确。")
     st.info("최초 관리자 / Initial Admin: admin / ChangeMe123!")
     st.stop()
+
+
+
+def apply_app_theme():
+    """Apply a deterministic app-level light/dark theme."""
+    theme = st.session_state.get("app_theme", "dark")
+
+    if theme == "dark":
+        bg = "#0B0F14"
+        card = "#151B22"
+        text = "#F4F6F8"
+        muted = "#A7B0BB"
+        line = "#303A45"
+        input_bg = "#20252D"
+        soft = "#30291D"
+        hover = "#242B34"
+        shadow = "rgba(0,0,0,.32)"
+    else:
+        bg = "#F6F7F9"
+        card = "#FFFFFF"
+        text = "#20232A"
+        muted = "#6B7280"
+        line = "#E7E9EE"
+        input_bg = "#FFFFFF"
+        soft = "#F7F1E5"
+        hover = "#F1F3F5"
+        shadow = "rgba(24,28,36,.08)"
+
+    st.markdown(
+        f"""
+        <style>
+          :root {{
+            --voc-bg:{bg}!important;
+            --voc-card:{card}!important;
+            --voc-text:{text}!important;
+            --voc-muted:{muted}!important;
+            --voc-line:{line}!important;
+            --voc-input:{input_bg}!important;
+            --voc-gold:#B58A3A!important;
+            --voc-gold-soft:{soft}!important;
+            --voc-hover:{hover}!important;
+          }}
+
+          html, body,
+          [data-testid="stAppViewContainer"],
+          [data-testid="stAppViewContainer"] > .main,
+          .stApp, .main, .block-container {{
+            background:{bg}!important;
+            color:{text}!important;
+          }}
+
+          header[data-testid="stHeader"],
+          [data-testid="stToolbar"] {{
+            background:{bg}!important;
+            color:{text}!important;
+          }}
+
+          .voc-shell,
+          div[data-testid="stMetric"],
+          div[data-testid="stVerticalBlockBorderWrapper"],
+          .st-key-top_navigation > div,
+          div[data-testid="stDataFrame"],
+          [data-testid="stTable"],
+          [data-testid="stExpander"],
+          details {{
+            background:{card}!important;
+            color:{text}!important;
+            border-color:{line}!important;
+            box-shadow:0 8px 28px {shadow}!important;
+          }}
+
+          .st-key-top_navigation {{
+            background:{bg}!important;
+          }}
+
+          .stTextInput input,
+          .stTextArea textarea,
+          div[data-baseweb="select"] > div,
+          div[data-baseweb="input"] > div,
+          [data-baseweb="base-input"] {{
+            background:{input_bg}!important;
+            color:{text}!important;
+            border-color:{line}!important;
+          }}
+
+          .stTextInput input::placeholder,
+          .stTextArea textarea::placeholder {{
+            color:{muted}!important;
+          }}
+
+          .stButton > button,
+          .stDownloadButton > button {{
+            background:{card}!important;
+            color:{text}!important;
+            border-color:{line}!important;
+          }}
+
+          .stButton > button:hover,
+          .stDownloadButton > button:hover {{
+            background:{hover}!important;
+          }}
+
+          h1,h2,h3,h4,h5,h6,p,label,
+          [data-testid="stMarkdownContainer"],
+          [data-testid="stCaptionContainer"],
+          [data-testid="stText"] {{
+            color:{text}!important;
+          }}
+
+          .voc-version,
+          .voc-section-note,
+          div[data-testid="stMetric"] label {{
+            color:{muted}!important;
+          }}
+
+          [role="listbox"],
+          [data-baseweb="popover"],
+          [data-baseweb="menu"],
+          [data-testid="stPopoverBody"] {{
+            background:{card}!important;
+            color:{text}!important;
+          }}
+
+          [role="option"] {{
+            color:{text}!important;
+            background:{card}!important;
+          }}
+
+          [role="option"]:hover {{
+            background:{hover}!important;
+          }}
+
+          hr {{
+            border-color:{line}!important;
+          }}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_top_header():
@@ -1789,26 +1928,40 @@ def settings_page(user):
 def main():
     if "lang" not in st.session_state:
         st.session_state.lang = "ko"
+    if "app_theme" not in st.session_state:
+        st.session_state.app_theme = "dark"
+
+    apply_app_theme()
 
     loading = st.empty()
-    loading.markdown("""
-    <div style="position:fixed;inset:0;z-index:999999;background:var(--background-color,#ffffff);display:flex;
-                align-items:center;justify-content:center;flex-direction:column;color:var(--text-color,#20232A);">
-      <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;
-                  letter-spacing:.12em;color:#B89046;margin-bottom:14px;">VOC INTELLIGENCE</div>
-      <div style="width:42px;height:42px;border:4px solid color-mix(in srgb,var(--text-color,#20232A) 20%,transparent);border-top-color:#B89046;
-                  border-radius:50%;animation:vocspin 0.9s linear infinite;"></div>
-      <div style="margin-top:16px;font-size:15px;color:var(--text-color,#20232A);opacity:.72;">로딩 중입니다 · Loading · 加载中...</div>
-    </div>
-    <style>@keyframes vocspin {to {transform:rotate(360deg);}}</style>
-    """, unsafe_allow_html=True)
+    _load_dark = st.session_state.get("app_theme", "dark") == "dark"
+    _load_bg = "#0B0F14" if _load_dark else "#F6F7F9"
+    _load_text = "#F4F6F8" if _load_dark else "#20232A"
+    _load_ring = "#39424D" if _load_dark else "#E4E6EA"
+    loading.markdown(
+        f"""
+        <div style="position:fixed;inset:0;z-index:999999;background:{_load_bg};display:flex;
+                    align-items:center;justify-content:center;flex-direction:column;color:{_load_text};">
+          <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:700;
+                      letter-spacing:.12em;color:#B89046;margin-bottom:14px;">VOC INTELLIGENCE</div>
+          <div style="width:42px;height:42px;border:4px solid {_load_ring};border-top-color:#B89046;
+                      border-radius:50%;animation:vocspin 0.9s linear infinite;"></div>
+          <div style="margin-top:16px;font-size:15px;color:{_load_text};opacity:.72;">
+            로딩 중입니다 · Loading · 加载中...
+          </div>
+        </div>
+        <style>@keyframes vocspin {{to {{transform:rotate(360deg);}}}}</style>
+        """,
+        unsafe_allow_html=True,
+    )
     init_db()
     loading.empty()
     user = require_login()
     render_top_header()
+    apply_app_theme()
 
     # Top control row
-    ctl1, ctl2, ctl3, ctl4 = st.columns([1.25, 1.25, 1.8, 1.1])
+    ctl1, ctl2, ctl3, ctl4, ctl5 = st.columns([1.2, 1.2, 1.7, .62, 1.05])
     with ctl1:
         lang_name = st.selectbox(
             "언어 / Language / 语言",
@@ -1855,6 +2008,25 @@ def main():
                 placeholder=f"{key_label} API Key · 현재 브라우저 세션에서만 사용"
             )
     with ctl4:
+        st.caption("Theme")
+        theme_icon = "☀️" if st.session_state.get("app_theme") == "dark" else "🌙"
+        theme_help = (
+            "라이트 모드로 전환 / Switch to Light"
+            if st.session_state.get("app_theme") == "dark"
+            else "다크 모드로 전환 / Switch to Dark"
+        )
+        if st.button(
+            theme_icon,
+            key="app_theme_toggle",
+            help=theme_help,
+            use_container_width=True,
+        ):
+            st.session_state.app_theme = (
+                "light" if st.session_state.get("app_theme") == "dark" else "dark"
+            )
+            st.rerun()
+
+    with ctl5:
         st.caption(f"{user['display_name']} · {user['role']}")
         if st.button("로그아웃 / Logout / 退出", use_container_width=True):
             st.session_state.user = None
