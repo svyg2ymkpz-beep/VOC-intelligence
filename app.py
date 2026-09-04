@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.5 Emoji Navigation Edition"
+APP_VERSION = "V4.7.6 Large Icons & Full Dark Mode"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1035,15 +1035,24 @@ def render_top_header():
       .st-key-nav_translate button,
       .st-key-nav_settings button {
         width:100%;
-        height:58px;
-        min-height:58px;
+        height:68px;
+        min-height:68px;
         border:1px solid transparent!important;
         border-radius:12px!important;
         background:transparent!important;
-        font-size:1.70rem!important;
+        font-size:3.05rem!important;
         font-weight:700!important;
         transition:background .18s ease, color .18s ease,
                    border-color .18s ease, transform .18s ease!important;
+      }
+
+      .st-key-nav_analysis button p {
+        font-family:Arial, sans-serif!important;
+        font-size:2.55rem!important;
+        line-height:1!important;
+      }
+      .st-key-nav_analysis button p::before {
+        content:"";
       }
 
       .st-key-nav_dashboard button:hover,
@@ -1091,6 +1100,138 @@ def render_top_header():
         font-weight:750;
       }
 
+
+      /* Full-page dark mode */
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --voc-bg:#0E1117;
+          --voc-card:#171B22;
+          --voc-text:#F3F4F6;
+          --voc-muted:#A9B0BC;
+          --voc-line:#303641;
+          --voc-gold:#D3A94F;
+          --voc-gold-soft:#30291D;
+        }
+
+        html, body,
+        [data-testid="stAppViewContainer"],
+        [data-testid="stAppViewContainer"] > .main,
+        .stApp,
+        .main,
+        .block-container {
+          background:#0E1117!important;
+          color:#F3F4F6!important;
+        }
+
+        header[data-testid="stHeader"] {
+          background:#0E1117!important;
+        }
+
+        .voc-shell,
+        div[data-testid="stMetric"],
+        div[data-testid="stVerticalBlockBorderWrapper"],
+        div[data-baseweb="tab-list"],
+        .st-key-top_navigation > div {
+          background:#171B22!important;
+          border-color:#303641!important;
+          color:#F3F4F6!important;
+          box-shadow:0 8px 28px rgba(0,0,0,.28)!important;
+        }
+
+        .st-key-top_navigation {
+          background:rgba(14,17,23,.96)!important;
+        }
+
+        .voc-brand-title { color:#E2B85C!important; }
+        .voc-version, .voc-section-note,
+        div[data-testid="stMetric"] label {
+          color:#A9B0BC!important;
+        }
+
+        .voc-chip {
+          background:#2A241A!important;
+          color:#E5C77D!important;
+          border-color:#55462B!important;
+        }
+
+        h1,h2,h3,h4,h5,h6,p,label,span,
+        [data-testid="stMarkdownContainer"],
+        [data-testid="stCaptionContainer"],
+        [data-testid="stText"] {
+          color:#F3F4F6;
+        }
+
+        .stTextInput input,
+        .stTextArea textarea,
+        div[data-baseweb="select"] > div,
+        div[data-baseweb="input"] > div,
+        [data-baseweb="base-input"] {
+          background:#11151B!important;
+          color:#F3F4F6!important;
+          border-color:#39414D!important;
+        }
+
+        .stTextInput input::placeholder,
+        .stTextArea textarea::placeholder {
+          color:#7F8793!important;
+        }
+
+        .stButton > button,
+        .stDownloadButton > button {
+          background:#1B2028!important;
+          color:#F3F4F6!important;
+          border-color:#39414D!important;
+        }
+
+        .stButton > button:hover,
+        .stDownloadButton > button:hover {
+          background:#272E38!important;
+          border-color:#5A6472!important;
+        }
+
+        .st-key-nav_dashboard button,
+        .st-key-nav_analysis button,
+        .st-key-nav_search button,
+        .st-key-nav_translate button,
+        .st-key-nav_settings button {
+          background:transparent!important;
+          color:#F3F4F6!important;
+        }
+
+        .st-key-nav_dashboard button:hover,
+        .st-key-nav_analysis button:hover,
+        .st-key-nav_search button:hover,
+        .st-key-nav_translate button:hover,
+        .st-key-nav_settings button:hover {
+          background:#30291D!important;
+          color:#E2B85C!important;
+          border-color:#665431!important;
+        }
+
+        div[data-testid="stDataFrame"],
+        [data-testid="stTable"],
+        [data-testid="stExpander"],
+        details {
+          background:#171B22!important;
+          color:#F3F4F6!important;
+          border-color:#303641!important;
+        }
+
+        hr { border-color:#303641!important; }
+
+        [data-testid="stAlert"] {
+          color:#F3F4F6!important;
+        }
+
+        [data-testid="stPopover"],
+        [role="dialog"],
+        [role="listbox"],
+        [data-baseweb="popover"] {
+          background:#171B22!important;
+          color:#F3F4F6!important;
+        }
+      }
+
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
         .st-key-nav_dashboard button,
@@ -1098,9 +1239,9 @@ def render_top_header():
         .st-key-nav_search button,
         .st-key-nav_translate button,
         .st-key-nav_settings button {
-          height:52px;
-          min-height:52px;
-          font-size:1.48rem!important;
+          height:60px;
+          min-height:60px;
+          font-size:2.35rem!important;
         }
         .voc-brand-title { font-size:1.05rem; }
         .voc-chip { display:none; }
@@ -1782,7 +1923,7 @@ def main():
         with n2:
             with st.container(key="nav_analysis"):
                 if st.button(
-                    "🤖",
+                    "⚙︎",
                     key="nav_btn_analysis",
                     help="AI VOC Analysis · 심층분석 · AI深度分析",
                     use_container_width=True
@@ -1828,6 +1969,14 @@ def main():
             color:#8A6827!important;
             border-color:#D9BD83!important;
             box-shadow:inset 0 -3px 0 #B58A3A;
+          }}
+          @media (prefers-color-scheme: dark) {{
+            .st-key-nav_{page} button {{
+              background:#30291D!important;
+              color:#E2B85C!important;
+              border-color:#665431!important;
+              box-shadow:inset 0 -3px 0 #D3A94F;
+            }}
           }}
         </style>
         """,
