@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.6 Large Icons & Full Dark Mode"
+APP_VERSION = "V4.7.7 True Dark Canvas Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1101,64 +1101,113 @@ def render_top_header():
       }
 
 
-      /* Full-page dark mode */
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --voc-bg:#0E1117;
-          --voc-card:#171B22;
-          --voc-text:#F3F4F6;
-          --voc-muted:#A9B0BC;
-          --voc-line:#303641;
-          --voc-gold:#D3A94F;
-          --voc-gold-soft:#30291D;
-        }
 
+      /* Full-page dark mode:
+         supports both browser dark mode and Streamlit's own dark theme. */
+
+      @media (prefers-color-scheme: dark) {
         html, body,
         [data-testid="stAppViewContainer"],
         [data-testid="stAppViewContainer"] > .main,
-        .stApp,
-        .main,
-        .block-container {
-          background:#0E1117!important;
-          color:#F3F4F6!important;
+        .stApp, .main, .block-container {
+          background:#0B0F14!important;
+          color:#F4F6F8!important;
         }
+        header[data-testid="stHeader"] { background:#0B0F14!important; }
+      }
 
-        header[data-testid="stHeader"] {
-          background:#0E1117!important;
-        }
+      html[data-theme="dark"],
+      body[data-theme="dark"],
+      [data-theme="dark"] {
+        --voc-bg:#0B0F14!important;
+        --voc-card:#141A21!important;
+        --voc-text:#F4F6F8!important;
+        --voc-muted:#A8B0BA!important;
+        --voc-line:#2C3540!important;
+        --voc-gold:#D8AD54!important;
+        --voc-gold-soft:#2E271B!important;
+      }
 
+      html[data-theme="dark"] body,
+      body[data-theme="dark"],
+      html[data-theme="dark"] [data-testid="stAppViewContainer"],
+      body[data-theme="dark"] [data-testid="stAppViewContainer"],
+      [data-theme="dark"] [data-testid="stAppViewContainer"],
+      html[data-theme="dark"] .stApp,
+      body[data-theme="dark"] .stApp,
+      [data-theme="dark"] .stApp,
+      html[data-theme="dark"] .main,
+      body[data-theme="dark"] .main,
+      [data-theme="dark"] .main,
+      html[data-theme="dark"] .block-container,
+      body[data-theme="dark"] .block-container,
+      [data-theme="dark"] .block-container {
+        background:#0B0F14!important;
+        color:#F4F6F8!important;
+      }
+
+      html[data-theme="dark"] header[data-testid="stHeader"],
+      body[data-theme="dark"] header[data-testid="stHeader"],
+      [data-theme="dark"] header[data-testid="stHeader"] {
+        background:#0B0F14!important;
+      }
+
+      @media (prefers-color-scheme: dark) {
         .voc-shell,
         div[data-testid="stMetric"],
         div[data-testid="stVerticalBlockBorderWrapper"],
         div[data-baseweb="tab-list"],
         .st-key-top_navigation > div {
-          background:#171B22!important;
-          border-color:#303641!important;
-          color:#F3F4F6!important;
-          box-shadow:0 8px 28px rgba(0,0,0,.28)!important;
+          background:#141A21!important;
+          border-color:#2C3540!important;
+          color:#F4F6F8!important;
+          box-shadow:0 8px 28px rgba(0,0,0,.30)!important;
         }
-
         .st-key-top_navigation {
-          background:rgba(14,17,23,.96)!important;
+          background:rgba(11,15,20,.96)!important;
         }
+      }
 
+      html[data-theme="dark"] .voc-shell,
+      body[data-theme="dark"] .voc-shell,
+      [data-theme="dark"] .voc-shell,
+      html[data-theme="dark"] div[data-testid="stMetric"],
+      body[data-theme="dark"] div[data-testid="stMetric"],
+      [data-theme="dark"] div[data-testid="stMetric"],
+      html[data-theme="dark"] div[data-testid="stVerticalBlockBorderWrapper"],
+      body[data-theme="dark"] div[data-testid="stVerticalBlockBorderWrapper"],
+      [data-theme="dark"] div[data-testid="stVerticalBlockBorderWrapper"],
+      html[data-theme="dark"] .st-key-top_navigation > div,
+      body[data-theme="dark"] .st-key-top_navigation > div,
+      [data-theme="dark"] .st-key-top_navigation > div {
+        background:#141A21!important;
+        border-color:#2C3540!important;
+        color:#F4F6F8!important;
+        box-shadow:0 8px 28px rgba(0,0,0,.30)!important;
+      }
+
+      html[data-theme="dark"] .st-key-top_navigation,
+      body[data-theme="dark"] .st-key-top_navigation,
+      [data-theme="dark"] .st-key-top_navigation {
+        background:rgba(11,15,20,.96)!important;
+      }
+
+      @media (prefers-color-scheme: dark) {
         .voc-brand-title { color:#E2B85C!important; }
         .voc-version, .voc-section-note,
-        div[data-testid="stMetric"] label {
-          color:#A9B0BC!important;
-        }
+        div[data-testid="stMetric"] label { color:#A8B0BA!important; }
 
         .voc-chip {
-          background:#2A241A!important;
+          background:#2E271B!important;
           color:#E5C77D!important;
-          border-color:#55462B!important;
+          border-color:#5A4A2D!important;
         }
 
         h1,h2,h3,h4,h5,h6,p,label,span,
         [data-testid="stMarkdownContainer"],
         [data-testid="stCaptionContainer"],
         [data-testid="stText"] {
-          color:#F3F4F6;
+          color:#F4F6F8!important;
         }
 
         .stTextInput input,
@@ -1166,36 +1215,126 @@ def render_top_header():
         div[data-baseweb="select"] > div,
         div[data-baseweb="input"] > div,
         [data-baseweb="base-input"] {
-          background:#11151B!important;
-          color:#F3F4F6!important;
-          border-color:#39414D!important;
-        }
-
-        .stTextInput input::placeholder,
-        .stTextArea textarea::placeholder {
-          color:#7F8793!important;
+          background:#171D24!important;
+          color:#F4F6F8!important;
+          border-color:#36414D!important;
         }
 
         .stButton > button,
         .stDownloadButton > button {
-          background:#1B2028!important;
-          color:#F3F4F6!important;
-          border-color:#39414D!important;
+          background:#171D24!important;
+          color:#F4F6F8!important;
+          border-color:#36414D!important;
         }
 
-        .stButton > button:hover,
-        .stDownloadButton > button:hover {
-          background:#272E38!important;
-          border-color:#5A6472!important;
+        div[data-testid="stDataFrame"],
+        [data-testid="stTable"],
+        [data-testid="stExpander"],
+        details {
+          background:#141A21!important;
+          color:#F4F6F8!important;
+          border-color:#2C3540!important;
         }
+      }
 
+      html[data-theme="dark"] .voc-brand-title,
+      body[data-theme="dark"] .voc-brand-title,
+      [data-theme="dark"] .voc-brand-title {
+        color:#E2B85C!important;
+      }
+
+      html[data-theme="dark"] .voc-version,
+      body[data-theme="dark"] .voc-version,
+      [data-theme="dark"] .voc-version,
+      html[data-theme="dark"] .voc-section-note,
+      body[data-theme="dark"] .voc-section-note,
+      [data-theme="dark"] .voc-section-note,
+      html[data-theme="dark"] div[data-testid="stMetric"] label,
+      body[data-theme="dark"] div[data-testid="stMetric"] label,
+      [data-theme="dark"] div[data-testid="stMetric"] label {
+        color:#A8B0BA!important;
+      }
+
+      html[data-theme="dark"] .voc-chip,
+      body[data-theme="dark"] .voc-chip,
+      [data-theme="dark"] .voc-chip {
+        background:#2E271B!important;
+        color:#E5C77D!important;
+        border-color:#5A4A2D!important;
+      }
+
+      html[data-theme="dark"] h1,
+      html[data-theme="dark"] h2,
+      html[data-theme="dark"] h3,
+      html[data-theme="dark"] h4,
+      html[data-theme="dark"] h5,
+      html[data-theme="dark"] h6,
+      html[data-theme="dark"] p,
+      html[data-theme="dark"] label,
+      body[data-theme="dark"] h1,
+      body[data-theme="dark"] h2,
+      body[data-theme="dark"] h3,
+      body[data-theme="dark"] p,
+      [data-theme="dark"] [data-testid="stMarkdownContainer"],
+      [data-theme="dark"] [data-testid="stCaptionContainer"],
+      [data-theme="dark"] [data-testid="stText"] {
+        color:#F4F6F8!important;
+      }
+
+      html[data-theme="dark"] .stTextInput input,
+      body[data-theme="dark"] .stTextInput input,
+      [data-theme="dark"] .stTextInput input,
+      html[data-theme="dark"] .stTextArea textarea,
+      body[data-theme="dark"] .stTextArea textarea,
+      [data-theme="dark"] .stTextArea textarea,
+      html[data-theme="dark"] div[data-baseweb="select"] > div,
+      body[data-theme="dark"] div[data-baseweb="select"] > div,
+      [data-theme="dark"] div[data-baseweb="select"] > div,
+      html[data-theme="dark"] [data-baseweb="base-input"],
+      body[data-theme="dark"] [data-baseweb="base-input"],
+      [data-theme="dark"] [data-baseweb="base-input"] {
+        background:#171D24!important;
+        color:#F4F6F8!important;
+        border-color:#36414D!important;
+      }
+
+      html[data-theme="dark"] .stButton > button,
+      body[data-theme="dark"] .stButton > button,
+      [data-theme="dark"] .stButton > button,
+      html[data-theme="dark"] .stDownloadButton > button,
+      body[data-theme="dark"] .stDownloadButton > button,
+      [data-theme="dark"] .stDownloadButton > button {
+        background:#171D24!important;
+        color:#F4F6F8!important;
+        border-color:#36414D!important;
+      }
+
+      html[data-theme="dark"] div[data-testid="stDataFrame"],
+      body[data-theme="dark"] div[data-testid="stDataFrame"],
+      [data-theme="dark"] div[data-testid="stDataFrame"],
+      html[data-theme="dark"] [data-testid="stTable"],
+      body[data-theme="dark"] [data-testid="stTable"],
+      [data-theme="dark"] [data-testid="stTable"],
+      html[data-theme="dark"] [data-testid="stExpander"],
+      body[data-theme="dark"] [data-testid="stExpander"],
+      [data-theme="dark"] [data-testid="stExpander"],
+      html[data-theme="dark"] details,
+      body[data-theme="dark"] details,
+      [data-theme="dark"] details {
+        background:#141A21!important;
+        color:#F4F6F8!important;
+        border-color:#2C3540!important;
+      }
+
+      /* Dark theme navigation */
+      @media (prefers-color-scheme: dark) {
         .st-key-nav_dashboard button,
         .st-key-nav_analysis button,
         .st-key-nav_search button,
         .st-key-nav_translate button,
         .st-key-nav_settings button {
           background:transparent!important;
-          color:#F3F4F6!important;
+          color:#F4F6F8!important;
         }
 
         .st-key-nav_dashboard button:hover,
@@ -1203,33 +1342,49 @@ def render_top_header():
         .st-key-nav_search button:hover,
         .st-key-nav_translate button:hover,
         .st-key-nav_settings button:hover {
-          background:#30291D!important;
+          background:#2E271B!important;
           color:#E2B85C!important;
           border-color:#665431!important;
         }
+      }
 
-        div[data-testid="stDataFrame"],
-        [data-testid="stTable"],
-        [data-testid="stExpander"],
-        details {
-          background:#171B22!important;
-          color:#F3F4F6!important;
-          border-color:#303641!important;
-        }
+      html[data-theme="dark"] .st-key-nav_dashboard button,
+      html[data-theme="dark"] .st-key-nav_analysis button,
+      html[data-theme="dark"] .st-key-nav_search button,
+      html[data-theme="dark"] .st-key-nav_translate button,
+      html[data-theme="dark"] .st-key-nav_settings button,
+      body[data-theme="dark"] .st-key-nav_dashboard button,
+      body[data-theme="dark"] .st-key-nav_analysis button,
+      body[data-theme="dark"] .st-key-nav_search button,
+      body[data-theme="dark"] .st-key-nav_translate button,
+      body[data-theme="dark"] .st-key-nav_settings button,
+      [data-theme="dark"] .st-key-nav_dashboard button,
+      [data-theme="dark"] .st-key-nav_analysis button,
+      [data-theme="dark"] .st-key-nav_search button,
+      [data-theme="dark"] .st-key-nav_translate button,
+      [data-theme="dark"] .st-key-nav_settings button {
+        background:transparent!important;
+        color:#F4F6F8!important;
+      }
 
-        hr { border-color:#303641!important; }
-
-        [data-testid="stAlert"] {
-          color:#F3F4F6!important;
-        }
-
-        [data-testid="stPopover"],
-        [role="dialog"],
-        [role="listbox"],
-        [data-baseweb="popover"] {
-          background:#171B22!important;
-          color:#F3F4F6!important;
-        }
+      html[data-theme="dark"] .st-key-nav_dashboard button:hover,
+      html[data-theme="dark"] .st-key-nav_analysis button:hover,
+      html[data-theme="dark"] .st-key-nav_search button:hover,
+      html[data-theme="dark"] .st-key-nav_translate button:hover,
+      html[data-theme="dark"] .st-key-nav_settings button:hover,
+      body[data-theme="dark"] .st-key-nav_dashboard button:hover,
+      body[data-theme="dark"] .st-key-nav_analysis button:hover,
+      body[data-theme="dark"] .st-key-nav_search button:hover,
+      body[data-theme="dark"] .st-key-nav_translate button:hover,
+      body[data-theme="dark"] .st-key-nav_settings button:hover,
+      [data-theme="dark"] .st-key-nav_dashboard button:hover,
+      [data-theme="dark"] .st-key-nav_analysis button:hover,
+      [data-theme="dark"] .st-key-nav_search button:hover,
+      [data-theme="dark"] .st-key-nav_translate button:hover,
+      [data-theme="dark"] .st-key-nav_settings button:hover {
+        background:#2E271B!important;
+        color:#E2B85C!important;
+        border-color:#665431!important;
       }
 
       @media (max-width:800px) {
@@ -1923,7 +2078,7 @@ def main():
         with n2:
             with st.container(key="nav_analysis"):
                 if st.button(
-                    "⚙︎",
+                    "🧠",
                     key="nav_btn_analysis",
                     help="AI VOC Analysis · 심층분석 · AI深度分析",
                     use_container_width=True
@@ -1977,6 +2132,14 @@ def main():
               border-color:#665431!important;
               box-shadow:inset 0 -3px 0 #D3A94F;
             }}
+          }}
+          html[data-theme="dark"] .st-key-nav_{page} button,
+          body[data-theme="dark"] .st-key-nav_{page} button,
+          [data-theme="dark"] .st-key-nav_{page} button {{
+            background:#30291D!important;
+            color:#E2B85C!important;
+            border-color:#665431!important;
+            box-shadow:inset 0 -3px 0 #D3A94F;
           }}
         </style>
         """,
