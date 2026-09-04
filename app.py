@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.8.0 Clean Dual Theme Edition"
+APP_VERSION = "V4.8.1 Light Mode Fix Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1090,6 +1090,91 @@ def apply_app_theme():
         unsafe_allow_html=True,
     )
 
+    # Light-only hard reset for Streamlit components that may retain dark
+    # surfaces from the user's Streamlit/OS Appearance setting.
+    if theme == "light":
+        st.markdown(
+            """
+            <style>
+              html, body,
+              [data-testid="stAppViewContainer"],
+              [data-testid="stAppViewContainer"] > .main,
+              .stApp, .main, .block-container {
+                background:#F6F7F9!important;
+                color:#20232A!important;
+              }
+
+              header[data-testid="stHeader"],
+              [data-testid="stToolbar"],
+              [data-testid="stDecoration"] {
+                background:#F6F7F9!important;
+                color:#20232A!important;
+              }
+
+              .voc-shell,
+              .st-key-top_navigation > div,
+              div[data-testid="stMetric"],
+              div[data-testid="stVerticalBlockBorderWrapper"],
+              [data-testid="stExpander"],
+              details {
+                background:#FFFFFF!important;
+                color:#20232A!important;
+                border-color:#E7E9EE!important;
+              }
+
+              .st-key-top_navigation {
+                background:#F6F7F9!important;
+              }
+
+              .st-key-nav_dashboard button,
+              .st-key-nav_analysis button,
+              .st-key-nav_search button,
+              .st-key-nav_translate button,
+              .st-key-nav_settings button {
+                background:transparent!important;
+                color:#20232A!important;
+              }
+
+              .stTextInput input,
+              .stTextArea textarea,
+              div[data-baseweb="select"] > div,
+              div[data-baseweb="input"] > div,
+              [data-baseweb="base-input"],
+              .stButton > button,
+              .stDownloadButton > button {
+                background:#FFFFFF!important;
+                color:#20232A!important;
+                border-color:#D9DDE3!important;
+              }
+
+              div[data-baseweb="select"] span,
+              div[data-baseweb="select"] input,
+              [data-testid="stMarkdownContainer"],
+              [data-testid="stCaptionContainer"],
+              [data-testid="stText"],
+              h1,h2,h3,h4,h5,h6,p,label {
+                color:#20232A!important;
+              }
+
+              [role="listbox"],
+              [data-baseweb="popover"],
+              [data-baseweb="menu"],
+              [data-testid="stPopoverBody"],
+              [role="option"] {
+                background:#FFFFFF!important;
+                color:#20232A!important;
+              }
+
+              div[data-testid="stDataFrame"],
+              [data-testid="stTable"] {
+                background:#FFFFFF!important;
+                color:#20232A!important;
+              }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
 def render_top_header():
     st.markdown("""
     <style>
@@ -1969,15 +2054,16 @@ def main():
                 placeholder=f"{key_label} API Key · 현재 브라우저 세션에서만 사용"
             )
     with ctl4:
-        st.caption("Theme")
-        theme_icon = "🌙" if st.session_state.get("app_theme") == "dark" else "☀️"
+        _is_dark = st.session_state.get("app_theme") == "dark"
+        st.caption("Theme · " + ("Dark" if _is_dark else "Light"))
+        theme_label = "☀️ Light" if _is_dark else "🌙 Dark"
         theme_help = (
-            "현재 다크 모드 · 클릭하면 라이트 모드 / Dark · click for Light"
-            if st.session_state.get("app_theme") == "dark"
-            else "현재 라이트 모드 · 클릭하면 다크 모드 / Light · click for Dark"
+            "라이트 모드로 전환 / Switch to Light"
+            if _is_dark
+            else "다크 모드로 전환 / Switch to Dark"
         )
         if st.button(
-            theme_icon,
+            theme_label,
             key="app_theme_toggle",
             help=theme_help,
             use_container_width=True,
