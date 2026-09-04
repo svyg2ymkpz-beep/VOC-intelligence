@@ -30,7 +30,7 @@ try:
 except Exception:
     genai = None
 
-APP_VERSION = "V4.7.2 Interactive Navigation Edition"
+APP_VERSION = "V4.7.3 Reliable Navigation Edition"
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -1009,55 +1009,73 @@ def render_top_header():
       hr { border-color:var(--voc-line); }
 
 
-      /* Interactive navigation: icon normally, label on hover */
-      div[data-baseweb="tab-list"] {
-        overflow:visible!important;
-        align-items:center;
+      /* Reliable icon navigation buttons */
+      .voc-nav-wrap {
+        background:#FFFFFF;
+        border:1px solid var(--voc-line);
+        border-radius:15px;
+        padding:7px;
+        margin-bottom:1.1rem;
+        box-shadow:0 3px 14px rgba(24,28,36,.04);
       }
 
-      button[data-baseweb="tab"] {
-        position:relative!important;
-        overflow:hidden!important;
-        width:58px;
-        min-width:58px!important;
-        max-width:58px;
-        transition:width .20s ease, max-width .20s ease, background .20s ease,
-                   color .20s ease, box-shadow .20s ease!important;
-        white-space:nowrap!important;
+      .st-key-nav_dashboard button,
+      .st-key-nav_analysis button,
+      .st-key-nav_search button,
+      .st-key-nav_translate button,
+      .st-key-nav_settings button {
+        width:100%;
+        height:46px;
+        min-height:46px;
+        border:0!important;
+        border-radius:10px!important;
+        background:transparent!important;
+        font-size:1.18rem!important;
+        transition:background .18s ease, color .18s ease!important;
       }
 
-      button[data-baseweb="tab"]:hover {
-        width:150px;
-        max-width:150px;
-        background:#F4F5F7!important;
+      .st-key-nav_dashboard button:hover,
+      .st-key-nav_analysis button:hover,
+      .st-key-nav_search button:hover,
+      .st-key-nav_translate button:hover,
+      .st-key-nav_settings button:hover {
+        background:#F7F1E5!important;
+        color:#8A6827!important;
       }
 
-      button[data-baseweb="tab"] > div {
-        transition:opacity .12s ease!important;
+      .st-key-nav_dashboard button:hover p,
+      .st-key-nav_analysis button:hover p,
+      .st-key-nav_search button:hover p,
+      .st-key-nav_translate button:hover p,
+      .st-key-nav_settings button:hover p {
+        font-size:0!important;
       }
 
-      button[data-baseweb="tab"]::after {
-        display:none;
-        font-size:.82rem;
-        font-weight:650;
-        line-height:1;
-        white-space:nowrap;
-        color:#20232A;
+      .st-key-nav_dashboard button:hover p::after {
+        content:"Dashboard";
+        font-size:.83rem;
+        font-weight:700;
       }
-
-      button[data-baseweb="tab"]:hover > div {
-        display:none!important;
+      .st-key-nav_analysis button:hover p::after {
+        content:"AI 분석";
+        font-size:.83rem;
+        font-weight:700;
       }
-
-      button[data-baseweb="tab"]:hover::after {
-        display:inline-block;
+      .st-key-nav_search button:hover p::after {
+        content:"VOC 검색";
+        font-size:.83rem;
+        font-weight:700;
       }
-
-      button[data-baseweb="tab"]:nth-child(1):hover::after { content:"Dashboard"; }
-      button[data-baseweb="tab"]:nth-child(2):hover::after { content:"AI 분석"; }
-      button[data-baseweb="tab"]:nth-child(3):hover::after { content:"VOC 검색"; }
-      button[data-baseweb="tab"]:nth-child(4):hover::after { content:"Translate"; }
-      button[data-baseweb="tab"]:nth-child(5):hover::after { content:"Settings"; }
+      .st-key-nav_translate button:hover p::after {
+        content:"Translate";
+        font-size:.83rem;
+        font-weight:700;
+      }
+      .st-key-nav_settings button:hover p::after {
+        content:"Settings";
+        font-size:.83rem;
+        font-weight:700;
+      }
 
       @media (max-width:800px) {
         .block-container { padding-left:.75rem; padding-right:.75rem; }
@@ -1723,17 +1741,74 @@ def main():
 
     df = load_cases()
 
-    tabs = st.tabs(["⌂", "✦", "⌕", "文", "⚙"])
+    if "current_page" not in st.session_state:
+        st.session_state.current_page = "dashboard"
 
-    with tabs[0]:
+    st.markdown('<div class="voc-nav-wrap">', unsafe_allow_html=True)
+    n1, n2, n3, n4, n5 = st.columns(5)
+
+    with n1:
+        with st.container(key="nav_dashboard"):
+            if st.button(
+                "⌂",
+                key="nav_btn_dashboard",
+                help="Dashboard · 대시보드 · 仪表盘",
+                use_container_width=True
+            ):
+                st.session_state.current_page = "dashboard"
+
+    with n2:
+        with st.container(key="nav_analysis"):
+            if st.button(
+                "✦",
+                key="nav_btn_analysis",
+                help="AI VOC Analysis · 심층분석 · AI深度分析",
+                use_container_width=True
+            ):
+                st.session_state.current_page = "analysis"
+
+    with n3:
+        with st.container(key="nav_search"):
+            if st.button(
+                "⌕",
+                key="nav_btn_search",
+                help="Search & Edit · VOC 검색/수정 · 查询修改",
+                use_container_width=True
+            ):
+                st.session_state.current_page = "search"
+
+    with n4:
+        with st.container(key="nav_translate"):
+            if st.button(
+                "文",
+                key="nav_btn_translate",
+                help="Translate · 한중영 변환 · 韩中英转换",
+                use_container_width=True
+            ):
+                st.session_state.current_page = "translate"
+
+    with n5:
+        with st.container(key="nav_settings"):
+            if st.button(
+                "⚙",
+                key="nav_btn_settings",
+                help="Settings · 설정 · 设置",
+                use_container_width=True
+            ):
+                st.session_state.current_page = "settings"
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    page = st.session_state.current_page
+    if page == "dashboard":
         dashboard(df)
-    with tabs[1]:
+    elif page == "analysis":
         ai_analysis_page(user, provider, api_key, model)
-    with tabs[2]:
+    elif page == "search":
         search_edit_page(user, df)
-    with tabs[3]:
+    elif page == "translate":
         translation_page(provider, api_key, model)
-    with tabs[4]:
+    elif page == "settings":
         settings_page(user)
 
 if __name__ == "__main__":
